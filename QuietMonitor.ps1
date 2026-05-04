@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     QuietMonitor.ps1 - Interactive entry point for the QuietMonitor Security Suite.
 .DESCRIPTION

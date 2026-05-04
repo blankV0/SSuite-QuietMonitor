@@ -222,32 +222,42 @@ $lastScan      = [datetime]::MinValue
 $lastHeartbeat = [datetime]::MinValue
 $lastSettings  = (Get-Date)
 
-while (-not $script:shouldExit) {
-    $now = Get-Date
+while ($true) {
+    try {
+        if ($script:shouldExit) { break }
 
-    # Reload settings every 5 minutes
-    if (($now - $lastSettings).TotalMinutes -ge 5) {
-        $settings = Get-Settings
-        $lastSettings = $now
+        $now = Get-Date
+
+        # Reload settings every 5 minutes
+        if (($now - $lastSettings).TotalMinutes -ge 5) {
+            $settings = Get-Settings
+            $lastSettings = $now
+        }
+
+        # Heartbeat
+        if (($now - $lastHeartbeat).TotalSeconds -ge $settings.HeartbeatIntervalSeconds) {
+            Set-Content -Path $heartbeat -Value "LastHeartbeat: $(Get-Date -Format 'o') | Host: $env:COMPUTERNAME" -Encoding UTF8
+            $lastHeartbeat = $now
+        }
+
+        # Drain FS watcher events
+        Process-FSWEvents $settings
+
+        # Periodic scan
+        if (($now - $lastScan).TotalMinutes -ge $settings.ScanIntervalMinutes) {
+            Invoke-SecuritySuiteScan
+            $lastScan = Get-Date
+        }
+
+        # Sleep 10 seconds between loop iterations (keeps CPU near zero)
+        Start-Sleep -Seconds 10
+    } catch {
+        Add-Content -Path $auditLog -Value (
+            "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')] [MODULE: ServiceWorker] [ACTION: LoopError] " +
+            "[DETAILS: $($_.Exception.Message)]"
+        ) -Encoding UTF8 -ErrorAction SilentlyContinue
+        Start-Sleep -Seconds 10
     }
-
-    # Heartbeat
-    if (($now - $lastHeartbeat).TotalSeconds -ge $settings.HeartbeatIntervalSeconds) {
-        Set-Content -Path $heartbeat -Value "LastHeartbeat: $(Get-Date -Format 'o') | Host: $env:COMPUTERNAME" -Encoding UTF8
-        $lastHeartbeat = $now
-    }
-
-    # Drain FS watcher events
-    Process-FSWEvents $settings
-
-    # Periodic scan
-    if (($now - $lastScan).TotalMinutes -ge $settings.ScanIntervalMinutes) {
-        Invoke-SecuritySuiteScan
-        $lastScan = Get-Date
-    }
-
-    # Sleep 10 seconds between loop iterations (keeps CPU near zero)
-    Start-Sleep -Seconds 10
 }
 
 Add-Content -Path $auditLog -Value (
