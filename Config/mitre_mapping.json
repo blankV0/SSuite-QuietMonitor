@@ -1,0 +1,144 @@
+{
+  "Techniques": {
+    "T1003.001": {
+      "Id":          "T1003.001",
+      "Name":        "OS Credential Dumping: LSASS Memory",
+      "Tactic":      "Credential Access",
+      "Url":         "https://attack.mitre.org/techniques/T1003/001/",
+      "Description": "Adversaries may attempt to access credential material stored in the LSASS process memory."
+    },
+    "T1021.002": {
+      "Id":          "T1021.002",
+      "Name":        "Remote Services: SMB/Windows Admin Shares",
+      "Tactic":      "Lateral Movement",
+      "Url":         "https://attack.mitre.org/techniques/T1021/002/",
+      "Description": "Adversaries may use SMB and Windows admin shares to laterally move through environments."
+    },
+    "T1036": {
+      "Id":          "T1036",
+      "Name":        "Masquerading",
+      "Tactic":      "Defense Evasion",
+      "Url":         "https://attack.mitre.org/techniques/T1036/",
+      "Description": "Adversaries may attempt to manipulate process and file names to make malicious activity appear legitimate."
+    },
+    "T1049": {
+      "Id":          "T1049",
+      "Name":        "System Network Connections Discovery",
+      "Tactic":      "Discovery",
+      "Url":         "https://attack.mitre.org/techniques/T1049/",
+      "Description": "Adversaries may attempt to get a listing of network connections to or from the compromised system."
+    },
+    "T1053": {
+      "Id":          "T1053",
+      "Name":        "Scheduled Task/Job",
+      "Tactic":      "Execution / Persistence / Privilege Escalation",
+      "Url":         "https://attack.mitre.org/techniques/T1053/",
+      "Description": "Adversaries may abuse task scheduling functionality to facilitate initial or recurring execution of malicious code."
+    },
+    "T1055": {
+      "Id":          "T1055",
+      "Name":        "Process Injection",
+      "Tactic":      "Defense Evasion / Privilege Escalation",
+      "Url":         "https://attack.mitre.org/techniques/T1055/",
+      "Description": "Adversaries may inject code into processes in order to evade process-based defenses and elevate privileges."
+    },
+    "T1059": {
+      "Id":          "T1059",
+      "Name":        "Command and Scripting Interpreter",
+      "Tactic":      "Execution",
+      "Url":         "https://attack.mitre.org/techniques/T1059/",
+      "Description": "Adversaries may abuse command and script interpreters to execute commands, scripts, or binaries."
+    },
+    "T1071": {
+      "Id":          "T1071",
+      "Name":        "Application Layer Protocol",
+      "Tactic":      "Command and Control",
+      "Url":         "https://attack.mitre.org/techniques/T1071/",
+      "Description": "Adversaries may communicate using application layer protocols to avoid detection/network filtering."
+    },
+    "T1078": {
+      "Id":          "T1078",
+      "Name":        "Valid Accounts",
+      "Tactic":      "Defense Evasion / Persistence / Privilege Escalation / Initial Access",
+      "Url":         "https://attack.mitre.org/techniques/T1078/",
+      "Description": "Adversaries may obtain and abuse credentials of existing accounts as a means of gaining access or evading defenses."
+    },
+    "T1098": {
+      "Id":          "T1098",
+      "Name":        "Account Manipulation",
+      "Tactic":      "Persistence",
+      "Url":         "https://attack.mitre.org/techniques/T1098/",
+      "Description": "Adversaries may manipulate accounts to maintain access to victim systems."
+    },
+    "T1110": {
+      "Id":          "T1110",
+      "Name":        "Brute Force",
+      "Tactic":      "Credential Access",
+      "Url":         "https://attack.mitre.org/techniques/T1110/",
+      "Description": "Adversaries may use brute force techniques to gain access to accounts when passwords are unknown."
+    },
+    "T1134": {
+      "Id":          "T1134",
+      "Name":        "Access Token Manipulation",
+      "Tactic":      "Defense Evasion / Privilege Escalation",
+      "Url":         "https://attack.mitre.org/techniques/T1134/",
+      "Description": "Adversaries may modify access tokens to operate under a different user or system security context."
+    },
+    "T1204": {
+      "Id":          "T1204",
+      "Name":        "User Execution",
+      "Tactic":      "Execution",
+      "Url":         "https://attack.mitre.org/techniques/T1204/",
+      "Description": "Adversaries may rely on specific actions by a user to facilitate execution of malicious code."
+    },
+    "T1218": {
+      "Id":          "T1218",
+      "Name":        "Signed Binary Proxy Execution",
+      "Tactic":      "Defense Evasion",
+      "Url":         "https://attack.mitre.org/techniques/T1218/",
+      "Description": "Adversaries may bypass process or signature-based defenses by proxying execution through trusted, signed binaries."
+    },
+    "T1484": {
+      "Id":          "T1484",
+      "Name":        "Domain Policy Modification",
+      "Tactic":      "Defense Evasion / Privilege Escalation",
+      "Url":         "https://attack.mitre.org/techniques/T1484/",
+      "Description": "Adversaries may modify the configuration settings of a domain to evade defenses and/or escalate privileges."
+    },
+    "T1543": {
+      "Id":          "T1543",
+      "Name":        "Create or Modify System Process",
+      "Tactic":      "Persistence / Privilege Escalation",
+      "Url":         "https://attack.mitre.org/techniques/T1543/",
+      "Description": "Adversaries may create or modify system-level processes to repeatedly execute malicious payloads."
+    },
+    "T1547": {
+      "Id":          "T1547",
+      "Name":        "Boot or Logon Autostart Execution",
+      "Tactic":      "Persistence / Privilege Escalation",
+      "Url":         "https://attack.mitre.org/techniques/T1547/",
+      "Description": "Adversaries may configure system settings to automatically execute a program during system boot or logon."
+    },
+    "T1548": {
+      "Id":          "T1548",
+      "Name":        "Abuse Elevation Control Mechanism",
+      "Tactic":      "Defense Evasion / Privilege Escalation",
+      "Url":         "https://attack.mitre.org/techniques/T1548/",
+      "Description": "Adversaries may circumvent mechanisms designed to control elevated privileges to gain higher-level permissions."
+    },
+    "T1562": {
+      "Id":          "T1562",
+      "Name":        "Impair Defenses",
+      "Tactic":      "Defense Evasion",
+      "Url":         "https://attack.mitre.org/techniques/T1562/",
+      "Description": "Adversaries may maliciously modify components of a victim environment in order to hinder or disable defensive mechanisms."
+    },
+    "T1569": {
+      "Id":          "T1569",
+      "Name":        "System Services",
+      "Tactic":      "Execution",
+      "Url":         "https://attack.mitre.org/techniques/T1569/",
+      "Description": "Adversaries may abuse system services or daemons to execute commands or programs."
+    }
+  }
+}

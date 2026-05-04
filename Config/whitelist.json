@@ -1,0 +1,103 @@
+{
+  "_comment": "QuietMonitor Security Suite - Whitelist Configuration. Edit this file to add trusted entries.",
+
+  "Services": [
+    "AdobeARMservice", "AJRouter", "ALG", "AppHostSvc", "AppIDSvc",
+    "Appinfo", "AppMgmt", "AppReadiness", "AppVClient", "AppXSvc",
+    "AudioEndpointBuilder", "Audiosrv", "AxInstSV",
+    "BFE", "BITS", "BrokerInfrastructure",
+    "cbdhsvc", "CDPSvc", "CDPUserSvc", "clipsvc", "COMSysApp",
+    "CoreMessagingRegistrar", "CryptSvc",
+    "DcomLaunch", "defragsvc", "DeviceAssociationService", "DeviceInstall",
+    "DevQueryBroker", "Dhcp", "DiagTrack", "DispBrokerDesktopSvc", "Dnscache",
+    "DoSvc", "dot3svc", "DPS", "DsmSvc", "DusmSvc",
+    "EapHost", "embeddedmode", "EntAppSvc", "EventLog", "EventSystem",
+    "fdPHost", "FDResPub", "FontCache",
+    "gpsvc",
+    "hidserv", "HvHost",
+    "IKEEXT", "InstallService", "iphlpsvc",
+    "KeyIso",
+    "LanmanServer", "LanmanWorkstation", "lfsvc", "LicenseManager", "lmhosts", "LSM",
+    "MapsBroker", "MpsSvc", "msiserver",
+    "NcbService", "NcsiSvc", "netprofm", "NetSetupSvc", "NgcCtnrSvc", "NgcSvc",
+    "NlaSvc", "nsi",
+    "OneSyncSvc",
+    "p2pimsvc", "p2psvc", "PcaSvc", "PimIndexMaintenanceSvc", "pla",
+    "PlugPlay", "PolicyAgent", "Power", "PrintNotify", "ProfSvc",
+    "RasAuto", "RasMan", "RmSvc", "RpcEptMapper", "RpcSs",
+    "SamSs", "Schedule", "SENS", "SessionEnv", "SharedAccess",
+    "ShellHWDetection", "SmsRouter", "Spooler", "SSDPSRV", "SstpSvc",
+    "StateRepository", "StorSvc", "SysMain", "SystemEventsBroker",
+    "tapisrv", "TermService", "Themes", "TimeBrokerSvc", "TokenBroker",
+    "TrkWks", "TrustedInstaller",
+    "tzautoupdate",
+    "UdkUserSvc", "UevAgentService", "UmRdpService", "UnistoreSvc",
+    "UserDataSvc", "UserManager", "UsoSvc",
+    "VaultSvc",
+    "W32Time", "wbengine", "Wcmsvc", "WdiServiceHost", "WdiSystemHost",
+    "WdNisSvc", "WebClient", "Wecsvc", "WEPHOSTSVC", "wercplsupport",
+    "WerSvc", "WiaRpc", "WinDefend", "WinHttpAutoProxySvc", "Winmgmt",
+    "WinRM", "wisvc", "wlidsvc", "wlpasvc", "WManSvc", "WMPNetworkSvc",
+    "workfolderssvc", "WpcMonSvc", "WPDBusEnum", "WpnService",
+    "wscsvc", "WSearch", "wuauserv", "WudfSvc",
+    "XblAuthManager", "XblGameSave", "XboxGipSvc", "XboxNetApiSvc"
+  ],
+
+  "ListeningPorts": [
+    80, 135, 137, 138, 139, 443, 445, 902, 1900,
+    3389, 5040, 5353, 5355, 7680,
+    49152, 49153, 49154, 49155, 49156, 49157, 49158, 49159, 49160
+  ],
+
+  "StartupEntries": [
+    "SecurityHealth", "WindowsDefender",
+    "OneDrive", "OneDriveSetup",
+    "Teams", "com.squirrel.Teams.Teams",
+    "Discord", "Slack", "Zoom",
+    "MicrosoftEdgeAutoLaunch", "MicrosoftEdge",
+    "ctfmon",
+    "AdobeReader", "AdobeARM",
+    "Spotify", "Steam",
+    "GoogleUpdate", "GoogleUpdateTaskMachineCore"
+  ],
+
+  "AdminUsers": [
+    "Administrator"
+  ],
+
+  "TrustedPublishers": [
+    "Microsoft Corporation",
+    "Microsoft Windows",
+    "Microsoft Windows Publisher",
+    "Microsoft Corporation.",
+    "Microsoft",
+    "Google LLC",
+    "Mozilla Corporation",
+    "Adobe Inc.",
+    "Adobe Systems, Incorporated",
+    "Intel Corporation",
+    "Intel(R) Corporation",
+    "NVIDIA Corporation",
+    "Advanced Micro Devices, Inc.",
+    "Realtek Semiconductor Corp",
+    "Qualcomm Atheros",
+    "Logitech Inc",
+    "Valve Corp",
+    "Spotify AB",
+    "Zoom Video Communications, Inc.",
+    "Slack Technologies, Inc."
+  ],
+
+  "TrustedTaskPaths": [
+    "C:\\Windows\\",
+    "C:\\Program Files\\",
+    "C:\\Program Files (x86)\\",
+    "C:\\ProgramData\\Microsoft\\"
+  ],
+
+  "TrustedTaskAuthors": [
+    "Microsoft Corporation",
+    "Microsoft",
+    "N/A"
+  ]
+}

@@ -1,0 +1,126 @@
+{
+  "_comment": "QuietMonitor Security Suite - Settings Configuration v2.0. Protect this file - it contains sensitive credentials.",
+  "_version": "2.0",
+  "_migration": "If upgrading from v1.0, new sections are auto-appended on first run. Review all new sections below.",
+
+  "SMTP": {
+    "_comment": "Configure your SMTP relay. Leave Username/Password empty for relay servers that don't require auth.",
+    "Server": "smtp.yourdomain.com",
+    "Port": 587,
+    "UseSsl": true,
+    "From": "security-suite@yourdomain.com",
+    "To": "security-admin@yourdomain.com",
+    "Username": "",
+    "PasswordEncrypted": "",
+    "_passwordNote": "Store password as Windows DPAPI encrypted string: Read-Host -AsSecureString | ConvertFrom-SecureString"
+  },
+
+  "Webhook": {
+    "Enabled": false,
+    "Url": "https://your-quietmonitor-dashboard.com/api/alerts",
+    "AuthHeader": "",
+    "_authNote": "Optional Bearer token or API key header value"
+  },
+
+  "Quarantine": {
+    "Password": "ChangeThisPassword-Min16Chars!",
+    "_passwordNote": "Password used to derive AES-256 key for quarantine encryption (PBKDF2/SHA256, 100000 iterations)",
+    "BasePath": "C:\\QuietMonitor\\Quarantine"
+  },
+
+  "Logging": {
+    "AuditLogPath": "C:\\QuietMonitor\\Logs\\audit.log",
+    "ReportPath": "C:\\QuietMonitor\\Reports",
+    "WeeklyReportPath": "C:\\QuietMonitor\\Reports\\Weekly",
+    "MaxLogSizeMB": 50
+  },
+
+  "EventLog": {
+    "Source": "QuietMonitor",
+    "LogName": "Application"
+  },
+
+  "weeklyReport": {
+    "_comment": "Scheduled weekly summary report. Runs via Windows Task Scheduler (created by Install-QuietMonitor.ps1).",
+    "enabled": true,
+    "dayOfWeek": "Monday",
+    "time": "08:00",
+    "email": true,
+    "retentionDays": 90
+  },
+
+  "baseline": {
+    "_comment": "System baseline capture. Run option [10] to rebuild baseline. First run auto-creates baseline.json.",
+    "enabled": true,
+    "path": "C:\\QuietMonitor\\Baseline\\baseline.json",
+    "includeSystem32Hashes": false,
+    "includeSysWOW64Hashes": false,
+    "includeProgramFilesHashes": false,
+    "autoRebuildDays": 30
+  },
+
+  "threatIntel": {
+    "_comment": "Threat intelligence feeds. All APIs are optional - suite works fully offline without keys.",
+    "abuseIPDB": {
+      "enabled": false,
+      "apiKey": "",
+      "_note": "Free tier: 1000 checks/day. Register at https://www.abuseipdb.com/api"
+    },
+    "virusTotal": {
+      "enabled": false,
+      "apiKey": "",
+      "_note": "Free tier: 4 requests/min. Register at https://www.virustotal.com/gui/my-apikey"
+    },
+    "malwareBazaar": {
+      "enabled": true,
+      "_note": "Free API - no key required. Checks process hashes against known malware database."
+    },
+    "urlhausBlocklistPath": "Config\\urlhaus_blocklist.txt",
+    "_urlhausNote": "Download from https://urlhaus.abuse.ch/downloads/text/ and save to above path",
+    "cacheHours": 24,
+    "cachePath": "Config\\threat_cache.json"
+  },
+
+  "uba": {
+    "_comment": "User Behavior Analytics. Analyzes Security event logs for anomalous patterns. MITRE: T1078, T1110.",
+    "enabled": true,
+    "normalHoursStart": "08:00",
+    "normalHoursEnd": "18:00",
+    "lookbackHours": 24,
+    "failedLoginThreshold": 5,
+    "failedLoginWindowMinutes": 5,
+    "baselinePath": "Config\\uba_baseline.json"
+  },
+
+  "ransomwareGuard": {
+    "_comment": "Real-time ransomware detection via FileSystemWatcher. MITRE: T1486, T1490.",
+    "enabled": true,
+    "watchedFolders": [ "Documents", "Desktop", "Downloads", "Pictures" ],
+    "massRenameThreshold": 10,
+    "massRenameWindowSeconds": 5,
+    "honeypotEnabled": true,
+    "honeypotPath": "C:\\QuietMonitor\\Honeypot",
+    "knownRansomwareExtensions": [
+      ".locked", ".encrypted", ".crypt", ".ransom", ".enc", ".crypted",
+      ".xxx", ".ttt", ".micro", ".vvv", ".ecc", ".ezz", ".exx", ".zzz",
+      ".aaa", ".abc", ".xyz", ".WNCRY", ".WCRY", ".wannacry", ".locky",
+      ".cerber", ".sage", ".globe", ".dharma", ".phobos"
+    ]
+  },
+
+  "vulnerability": {
+    "_comment": "Vulnerability management. Download NVD CVE feed from https://nvd.nist.gov/vuln/data-feeds",
+    "cveFeedPath": "Config\\nvd_cve_feed.json",
+    "patchCheckEnabled": true,
+    "criticalPatchAgeDays": 30,
+    "warnEolSoftware": true
+  },
+
+  "selfProtect": {
+    "_comment": "Anti-tamper protection. Monitors integrity of QuietMonitor's own PS1 files. MITRE: T1562.",
+    "enabled": true,
+    "moduleHashesPath": "Config\\module_hashes.json",
+    "alertOnTamper": true,
+    "monitorOwnDirectory": true
+  }
+}
