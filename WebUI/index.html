@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QuietMonitor Dashboard</title>
+  <script src="data.js"></script>
+  <style>
+    :root {
+      --bg:         #0d1117;
+      --panel:      #161b22;
+      --panel2:     #1c2128;
+      --border:     #30363d;
+      --text:       #c9d1d9;
+      --muted:      #8b949e;
+      --red:        #da3633;
+      --red-bg:     rgba(218,54,51,0.12);
+      --yellow:     #d29922;
+      --yellow-bg:  rgba(210,153,34,0.12);
+      --green:      #3fb950;
+      --green-bg:   rgba(63,185,80,0.10);
+      --blue:       #58a6ff;
+      --blue-bg:    rgba(88,166,255,0.08);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      min-height: 100vh;
+    }
+
+    /* ─── Header ─── */
+    header {
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    header h1 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--blue);
+      letter-spacing: 0.3px;
+    }
+    #status-badge {
+      padding: 5px 14px;
+      border-radius: 5px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    /* ─── Main layout ─── */
+    main { padding: 28px 32px; max-width: 1400px; }
+
+    /* ─── Score + cards row ─── */
+    .top-row {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+    .score-box {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px 36px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-width: 180px;
+    }
+    .score-box .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 6px; }
+    #risk-score {
+      font-size: 64px;
+      font-weight: 800;
+      line-height: 1;
+    }
+    #risk-level {
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .cards {
+      display: flex;
+      gap: 16px;
+      flex: 1;
+      flex-wrap: wrap;
+    }
+    .card {
+      flex: 1;
+      min-width: 140px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 22px 20px;
+      text-align: center;
+    }
+    .card .num { font-size: 48px; font-weight: 800; line-height: 1; }
+    .card .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-top: 6px; }
+    .card.red    { border-color: var(--red);    background: var(--red-bg); }
+    .card.yellow { border-color: var(--yellow); background: var(--yellow-bg); }
+    .card.green  { border-color: var(--green);  background: var(--green-bg); }
+    .card.blue   { border-color: var(--blue);   background: var(--blue-bg); }
+    .card.red    .num { color: var(--red); }
+    .card.yellow .num { color: var(--yellow); }
+    .card.green  .num { color: var(--green); }
+    .card.blue   .num { color: var(--blue); }
+
+    /* ─── Meta bar ─── */
+    .meta-bar {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 20px;
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .meta-bar span strong { color: var(--text); }
+
+    /* ─── Findings ─── */
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      border-left: 3px solid var(--blue);
+      padding-left: 10px;
+      margin-bottom: 14px;
+    }
+    .findings-wrap {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .finding {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 80px 130px 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+    .finding:last-child { border-bottom: none; }
+    .finding.red    { background: var(--red-bg); }
+    .finding.yellow { background: var(--yellow-bg); }
+    .finding.green  { background: var(--green-bg); }
+    .finding:hover  { filter: brightness(1.1); }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+    .badge.red    { background: var(--red);    color: #fff; }
+    .badge.yellow { background: var(--yellow); color: #000; }
+    .badge.green  { background: var(--green);  color: #000; }
+
+    .finding-module {
+      font-size: 11px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      color: var(--muted);
+      padding-top: 2px;
+    }
+    .finding-body {}
+    .finding-title { font-weight: 600; font-size: 13px; margin-bottom: 3px; }
+    .finding-detail { font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .finding-path {
+      font-size: 11px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      color: var(--muted);
+      margin-top: 4px;
+      word-break: break-all;
+    }
+    .finding-mitre {
+      font-size: 10px;
+      margin-top: 5px;
+    }
+    .finding-mitre a {
+      color: var(--blue);
+      text-decoration: none;
+    }
+    .finding-mitre a:hover { text-decoration: underline; }
+
+    .empty-state {
+      padding: 40px;
+      text-align: center;
+      color: var(--muted);
+    }
+    .empty-state .icon { font-size: 40px; margin-bottom: 10px; }
+
+    /* ─── No data screen ─── */
+    #no-data {
+      display: none;
+      padding: 80px 32px;
+      text-align: center;
+      color: var(--muted);
+    }
+    #no-data .icon { font-size: 48px; margin-bottom: 16px; }
+    #no-data p { font-size: 15px; margin-bottom: 8px; color: var(--text); }
+    #no-data code {
+      font-family: 'Consolas', monospace;
+      font-size: 12px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    footer {
+      margin-top: 40px;
+      padding: 14px 32px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 11px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>&#x1F6E1; QuietMonitor Security Suite</h1>
+  <span id="status-badge">—</span>
+</header>
+
+<div id="no-data">
+  <div class="icon">&#x1F4C2;</div>
+  <p>No scan data found.</p>
+  <p>Run a scan first: <code>.\Run-SecuritySuite.ps1 -ScanOnly</code></p>
+  <p style="margin-top:8px;font-size:12px;">Then re-open this file.</p>
+</div>
+
+<main id="main" style="display:none">
+
+  <!-- Score + Cards -->
+  <div class="top-row">
+    <div class="score-box">
+      <div class="label">Risk Score</div>
+      <div id="risk-score">—</div>
+      <div id="risk-level">—</div>
+    </div>
+    <div class="cards">
+      <div class="card red">
+        <div class="num" id="cnt-red">0</div>
+        <div class="lbl">&#x2716; Threats</div>
+      </div>
+      <div class="card yellow">
+        <div class="num" id="cnt-yellow">0</div>
+        <div class="lbl">&#x26A0; Suspicious</div>
+      </div>
+      <div class="card green">
+        <div class="num" id="cnt-green">0</div>
+        <div class="lbl">&#x2714; Clean</div>
+      </div>
+      <div class="card blue">
+        <div class="num" id="cnt-total">0</div>
+        <div class="lbl">Total Findings</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Meta -->
+  <div class="meta-bar">
+    <span>&#x1F4BB; <strong id="meta-host">—</strong></span>
+    <span>&#x1F552; <strong id="meta-time">—</strong></span>
+    <span>&#x23F1; <strong id="meta-dur">—</strong></span>
+    <span>&#x2699; Service: <strong id="meta-svc">—</strong></span>
+  </div>
+
+  <!-- Findings -->
+  <div class="section-title">Findings</div>
+  <div class="findings-wrap" id="findings-list">
+    <div class="empty-state"><div class="icon">&#x2705;</div>No findings to display.</div>
+  </div>
+
+</main>
+
+<footer>
+  QuietMonitor Security Suite &bull; Dashboard &bull;
+  Data source: <code>C:\QuietMonitor\WebUI\data.js</code>
+</footer>
+
+<script>
+(function () {
+  var data = window.SCAN_DATA;
+
+  if (!data) {
+    document.getElementById('no-data').style.display = 'block';
+    return;
+  }
+
+  document.getElementById('main').style.display = 'block';
+
+  // Status badge
+  var badge = document.getElementById('status-badge');
+  var red = (data.summary && data.summary.red) || 0;
+  var yellow = (data.summary && data.summary.yellow) || 0;
+  var green = (data.summary && data.summary.green) || 0;
+  var total = (data.summary && data.summary.total) || 0;
+
+  if (red > 0) {
+    badge.textContent = '⚠ THREAT DETECTED';
+    badge.style.background = 'var(--red)';
+    badge.style.color = '#fff';
+  } else if (yellow > 0) {
+    badge.textContent = '⚠ REVIEW REQUIRED';
+    badge.style.background = 'var(--yellow)';
+    badge.style.color = '#000';
+  } else {
+    badge.textContent = '✔ CLEAN';
+    badge.style.background = 'var(--green)';
+    badge.style.color = '#000';
+  }
+
+  // Risk score
+  var score = data.riskScore || 0;
+  var level = data.riskLevel || '—';
+  var scoreEl = document.getElementById('risk-score');
+  scoreEl.textContent = score;
+  scoreEl.style.color = red > 0 ? 'var(--red)' : yellow > 0 ? 'var(--yellow)' : 'var(--green)';
+  document.getElementById('risk-level').textContent = level;
+  document.getElementById('risk-level').style.color = red > 0 ? 'var(--red)' : yellow > 0 ? 'var(--yellow)' : 'var(--green)';
+
+  // Counters
+  document.getElementById('cnt-red').textContent    = red;
+  document.getElementById('cnt-yellow').textContent = yellow;
+  document.getElementById('cnt-green').textContent  = green;
+  document.getElementById('cnt-total').textContent  = total;
+
+  // Meta
+  document.getElementById('meta-host').textContent = data.host || '—';
+  document.getElementById('meta-time').textContent = data.timestamp || '—';
+  document.getElementById('meta-dur').textContent  = (data.scanDuration != null) ? data.scanDuration + 's' : '—';
+  document.getElementById('meta-svc').textContent  = data.serviceStatus || '—';
+
+  // Findings
+  var findings = data.findings || [];
+  var order = { Red: 0, Yellow: 1, Green: 2 };
+  findings.sort(function (a, b) {
+    return (order[a.severity] || 9) - (order[b.severity] || 9);
+  });
+
+  var container = document.getElementById('findings-list');
+  if (findings.length === 0) return;
+
+  container.innerHTML = '';
+  findings.forEach(function (f) {
+    var sev = f.severity || 'Green';
+    var cls = sev.toLowerCase();
+
+    var badgeText = sev === 'Red' ? '✖ THREAT' : sev === 'Yellow' ? '⚠ SUSPICIOUS' : '✔ CLEAN';
+    var mitre = '';
+    if (f.mitreId) {
+      var techId = f.mitreId.replace('.', '/');
+      mitre = '<div class="finding-mitre"><a href="https://attack.mitre.org/techniques/' + techId + '/" target="_blank">' + esc(f.mitreId) + (f.mitreName ? ': ' + esc(f.mitreName) : '') + '</a></div>';
+    }
+    var path = f.path ? '<div class="finding-path">' + esc(f.path) + '</div>' : '';
+
+    var el = document.createElement('div');
+    el.className = 'finding ' + cls;
+    el.innerHTML =
+      '<div><span class="badge ' + cls + '">' + badgeText + '</span></div>' +
+      '<div class="finding-module">' + esc(f.module || '') + '<br><span style="font-size:10px;color:var(--muted)">' + esc(f.category || '') + '</span></div>' +
+      '<div class="finding-body">' +
+        '<div class="finding-title">' + esc(f.title || '') + '</div>' +
+        '<div class="finding-detail">' + esc(f.detail || '') + '</div>' +
+        path + mitre +
+      '</div>';
+    container.appendChild(el);
+  });
+
+  function esc(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+})();
+</script>
+</body>
+</html>

@@ -152,6 +152,7 @@ function Install-QuietMonitorService {
         $LogsDir,
         (Join-Path $BaseDir 'Reports'),
         (Join-Path $BaseDir 'Quarantine'),
+        (Join-Path $BaseDir 'WebUI'),
         $ToolsDir
     )
 
