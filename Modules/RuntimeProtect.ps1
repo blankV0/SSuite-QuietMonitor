@@ -391,16 +391,16 @@ function Invoke-RuntimeProtectionCheck {
     $all = [System.Collections.Generic.List[PSCustomObject]]::new()
 
     Write-Host '  [RuntimeProtect] Anti-debug check...' -ForegroundColor DarkCyan
-    $all.AddRange(@(Test-AntiDebug -AuditLog $AuditLog))
+    foreach ($item in @(Test-AntiDebug -AuditLog $AuditLog)) { if ($null -ne $item) { $all.Add($item) } }
 
     Write-Host '  [RuntimeProtect] VM/sandbox detection...' -ForegroundColor DarkCyan
-    $all.AddRange(@(Test-SandboxVM -AuditLog $AuditLog))
+    foreach ($item in @(Test-SandboxVM -AuditLog $AuditLog)) { if ($null -ne $item) { $all.Add($item) } }
 
     Write-Host '  [RuntimeProtect] Process handle access check...' -ForegroundColor DarkCyan
-    $all.AddRange(@(Test-ProcessHandleAccess -AuditLog $AuditLog))
+    foreach ($item in @(Test-ProcessHandleAccess -AuditLog $AuditLog)) { if ($null -ne $item) { $all.Add($item) } }
 
     Write-Host '  [RuntimeProtect] API hook indicators...' -ForegroundColor DarkCyan
-    $all.AddRange(@(Test-APIHookIndicators -AuditLog $AuditLog))
+    foreach ($item in @(Test-APIHookIndicators -AuditLog $AuditLog)) { if ($null -ne $item) { $all.Add($item) } }
 
     # If any Red finding: save tamper snapshot
     $redFindings = @($all | Where-Object { $_.Severity -eq 'Red' })

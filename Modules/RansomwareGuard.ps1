@@ -239,7 +239,7 @@ function Invoke-RansomwareGuardScan {
         Enabled        = $true
         LastCheck      = (Get-Date -Format 'o')
         EventsDetected = $rCnt
-        HoneypotIntact = ($findings | Where-Object { $_.Title -eq 'Honeypot Files: Intact' }).Count -gt 0
+        HoneypotIntact = (@($findings | Where-Object { $_.Title -eq 'Honeypot Files: Intact' }).Count -gt 0)
         HoneypotPath   = $honeypotPath
     }
     script:Save-RGState $state

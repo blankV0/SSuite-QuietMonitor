@@ -387,13 +387,13 @@ function Invoke-IntegrityCheck {
     $all = [System.Collections.Generic.List[PSCustomObject]]::new()
 
     Write-Host '  [IntegrityEngine] Verifying file manifest...' -ForegroundColor DarkCyan
-    $all.AddRange(@(Test-IntegrityManifest -AuditLog $AuditLog))
+    foreach ($item in @(Test-IntegrityManifest -AuditLog $AuditLog)) { if ($null -ne $item) { $all.Add($item) } }
 
     Write-Host '  [IntegrityEngine] Checking System32 binaries...' -ForegroundColor DarkCyan
-    $all.AddRange(@(Test-System32BinaryIntegrity -AuditLog $AuditLog))
+    foreach ($item in @(Test-System32BinaryIntegrity -AuditLog $AuditLog)) { if ($null -ne $item) { $all.Add($item) } }
 
     Write-Host '  [IntegrityEngine] Validating process Authenticode signatures...' -ForegroundColor DarkCyan
-    $all.AddRange(@(Test-ProcessAuthenticodeSignatures -AuditLog $AuditLog))
+    foreach ($item in @(Test-ProcessAuthenticodeSignatures -AuditLog $AuditLog)) { if ($null -ne $item) { $all.Add($item) } }
 
     return $all.ToArray()
 }

@@ -38,7 +38,8 @@ function Invoke-IOCScanner {
     )
 
     $findings = [System.Collections.Generic.List[PSCustomObject]]::new()
-    $moduleRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+    $moduleRoot  = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
+    if (-not $moduleRoot) { $moduleRoot = Join-Path 'C:\QuietMonitor' 'Modules' }
     $configPath  = Join-Path (Split-Path -Parent $moduleRoot) 'Config'
 
     if (-not $IOCFilePath) {

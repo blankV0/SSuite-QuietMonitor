@@ -210,13 +210,13 @@ function Invoke-ProcessIntegrityCheck {
     $all = [System.Collections.Generic.List[PSCustomObject]]::new()
 
     Write-Host '  [ProcessIntegrity] Verifying service binary hash...' -ForegroundColor DarkCyan
-    $all.AddRange(@(Test-ServiceProcessIntegrity -AuditLog $AuditLog))
+    foreach ($item in @(Test-ServiceProcessIntegrity -AuditLog $AuditLog)) { if ($null -ne $item) { $all.Add($item) } }
 
     Write-Host '  [ProcessIntegrity] Checking for DLL injection...' -ForegroundColor DarkCyan
-    $all.AddRange(@(Test-DLLInjectionInProcess -AuditLog $AuditLog))
+    foreach ($item in @(Test-DLLInjectionInProcess -AuditLog $AuditLog)) { if ($null -ne $item) { $all.Add($item) } }
 
     Write-Host '  [ProcessIntegrity] Verifying child processes...' -ForegroundColor DarkCyan
-    $all.AddRange(@(Test-ChildProcesses -AuditLog $AuditLog))
+    foreach ($item in @(Test-ChildProcesses -AuditLog $AuditLog)) { if ($null -ne $item) { $all.Add($item) } }
 
     return $all.ToArray()
 }

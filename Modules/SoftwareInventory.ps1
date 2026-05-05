@@ -60,12 +60,12 @@ function Invoke-SoftwareInventory {
                 }
 
                 $records.Add([PSCustomObject]@{
-                    Name        = $app.DisplayName
-                    Version     = $app.DisplayVersion
-                    Publisher   = $app.Publisher
-                    InstallDate = $installDate
-                    InstallLocation = $app.InstallLocation
-                    UninstallString = $app.UninstallString
+                    Name            = $app.DisplayName
+                    Version         = $app.DisplayVersion
+                    Publisher       = $app.Publisher
+                    InstallDate     = $installDate
+                    InstallLocation = if ($app.PSObject.Properties['InstallLocation']) { $app.InstallLocation } else { '' }
+                    UninstallString = if ($app.PSObject.Properties['UninstallString'])  { $app.UninstallString  } else { '' }
                 })
             }
         }

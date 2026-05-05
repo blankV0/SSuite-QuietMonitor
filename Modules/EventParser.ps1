@@ -49,11 +49,11 @@ function Invoke-EventParser {
         # -----------------------------------------------------------------------
         # Event ID 4625 - Failed Logon
         # -----------------------------------------------------------------------
-        $failedLogons = Get-EventsSafe -FilterHashtable @{
+        $failedLogons = @(Get-EventsSafe -FilterHashtable @{
             LogName   = 'Security'
             Id        = 4625
             StartTime = $since
-        }
+        })
 
         if ($failedLogons.Count -gt 0) {
             # Group by target account to detect brute force
@@ -97,11 +97,11 @@ function Invoke-EventParser {
         # -----------------------------------------------------------------------
         # Event ID 4672 - Special Privileges Assigned (Privilege Escalation)
         # -----------------------------------------------------------------------
-        $privEvents = Get-EventsSafe -FilterHashtable @{
+        $privEvents = @(Get-EventsSafe -FilterHashtable @{
             LogName   = 'Security'
             Id        = 4672
             StartTime = $since
-        }
+        })
 
         if ($privEvents.Count -gt 0) {
             # Group by account, exclude known system accounts
@@ -139,11 +139,11 @@ function Invoke-EventParser {
         # -----------------------------------------------------------------------
         # Event ID 7045 - New Service Installed
         # -----------------------------------------------------------------------
-        $svcInstalls = Get-EventsSafe -FilterHashtable @{
+        $svcInstalls = @(Get-EventsSafe -FilterHashtable @{
             LogName   = 'System'
             Id        = 7045
             StartTime = $since
-        }
+        })
 
         foreach ($ev in $svcInstalls) {
             $serviceName = 'Unknown'
@@ -179,11 +179,11 @@ function Invoke-EventParser {
         # -----------------------------------------------------------------------
         # Event ID 1102 - Audit Log Cleared
         # -----------------------------------------------------------------------
-        $logClears = Get-EventsSafe -FilterHashtable @{
+        $logClears = @(Get-EventsSafe -FilterHashtable @{
             LogName   = 'Security'
             Id        = 1102
             StartTime = $since
-        }
+        })
 
         foreach ($ev in $logClears) {
             $clearedBy = 'Unknown'

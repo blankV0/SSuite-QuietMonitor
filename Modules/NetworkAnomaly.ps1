@@ -42,7 +42,8 @@ function Invoke-NetworkAnomalyDetection {
 
     $findings = [System.Collections.Generic.List[PSCustomObject]]::new()
     $currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
-    $moduleRoot  = Split-Path -Parent $MyInvocation.MyCommand.Path
+    $moduleRoot  = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
+    if (-not $moduleRoot) { $moduleRoot = Join-Path 'C:\QuietMonitor' 'Modules' }
     $configDir   = Join-Path (Split-Path -Parent $moduleRoot) 'Config'
 
     if (-not $BaselinePath) {
