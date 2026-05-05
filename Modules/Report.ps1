@@ -75,14 +75,14 @@ function New-SecurityReport {
             default  { $f.Severity }
         }
 
-        $safeDetails = [System.Web.HttpUtility]::HtmlEncode($f.Details)
-        $safeName    = [System.Web.HttpUtility]::HtmlEncode($f.DisplayName)
+        $safeDetails = [System.Web.HttpUtility]::HtmlEncode($f.Detail)
+        $safeName    = [System.Web.HttpUtility]::HtmlEncode($f.Title)
         $safePath    = [System.Web.HttpUtility]::HtmlEncode($f.Path)
-        $safeHash    = [System.Web.HttpUtility]::HtmlEncode($f.Hash)
+        $safeHash    = ''
         $safeModule  = [System.Web.HttpUtility]::HtmlEncode($f.Module)
         $safeCategory= [System.Web.HttpUtility]::HtmlEncode($f.Category)
         $safeAction  = [System.Web.HttpUtility]::HtmlEncode($f.ActionTaken)
-        $safeTime    = [System.Web.HttpUtility]::HtmlEncode($f.Timestamp)
+        $safeTime    = ''
         $safeMitre   = if ($f.MitreId -and $f.MitreId.Trim()) { [System.Web.HttpUtility]::HtmlEncode("$($f.MitreId): $($f.MitreName)") } else { '' }
         $mitreTechId = if ($f.MitreId -and $f.MitreId.Trim()) { $f.MitreId.Replace('.', '/') } else { '' }
 
@@ -115,7 +115,7 @@ function New-SecurityReport {
     $navTechniques = @(foreach ($group in $mitreGrouped) {
         $mitreId  = $group.Name
         $count    = $group.Count
-        $names    = ($group.Group | ForEach-Object { $_.DisplayName }) -join '; '
+        $names    = ($group.Group | ForEach-Object { $_.Title }) -join '; '
         $hasRed   = @($group.Group | Where-Object { $_.Severity -eq 'Red' }).Count -gt 0
         $color    = if ($hasRed) { '#ff4444' } else { '#ffaa44' }
         [PSCustomObject]@{

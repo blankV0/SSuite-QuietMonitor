@@ -48,15 +48,14 @@ function Send-SecurityAlert {
     [void]$findingsText.AppendLine("[ RED - $($redFindings.Count) THREAT(S) ]")
     foreach ($f in $redFindings) {
         [void]$findingsText.AppendLine("  Module  : $($f.Module)")
-        [void]$findingsText.AppendLine("  Name    : $($f.Name)")
-        [void]$findingsText.AppendLine("  Details : $($f.Details)")
+        [void]$findingsText.AppendLine("  Name    : $($f.Title)")
+        [void]$findingsText.AppendLine("  Details : $($f.Detail)")
         if ($f.Path)  { [void]$findingsText.AppendLine("  Path    : $($f.Path)") }
-        if ($f.Hash -and $f.Hash -ne 'N/A') { [void]$findingsText.AppendLine("  SHA256  : $($f.Hash)") }
         [void]$findingsText.AppendLine("")
     }
     [void]$findingsText.AppendLine("[ YELLOW - $($yellowFindings.Count) SUSPICIOUS ]")
     foreach ($f in $yellowFindings) {
-        [void]$findingsText.AppendLine("  [$($f.Module)] $($f.Name): $($f.Details)")
+        [void]$findingsText.AppendLine("  [$($f.Module)] $($f.Title): $($f.Detail)")
     }
 
     $bodyText = $findingsText.ToString()
@@ -172,7 +171,7 @@ function Send-SecurityAlert {
                 redCount    = $redFindings.Count
                 yellowCount = $yellowFindings.Count
                 summary     = $alertSummary
-                findings    = @($Findings | Where-Object { $_.Severity -in 'Red','Yellow' } | Select-Object Module, Severity, Category, Name, Details, Path, Hash)
+                findings    = @($Findings | Where-Object { $_.Severity -in 'Red','Yellow' } | Select-Object Module, Severity, Category, Title, Detail, Path)
             }
 
             $jsonBody = $payload | ConvertTo-Json -Depth 5 -Compress

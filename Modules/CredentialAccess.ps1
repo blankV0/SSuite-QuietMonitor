@@ -64,7 +64,7 @@ function Invoke-CredentialAccessMonitor {
         '0x1fffff', # PROCESS_ALL_ACCESS
         '0x143a',   # Procdump default
         '0x40',     # PROCESS_DUP_HANDLE alone (handle duplication)
-        '0x1000',   # PROCESS_QUERY_LIMITED_INFORMATION alone on lsass
+        '0x1000'    # PROCESS_QUERY_LIMITED_INFORMATION alone on lsass
     )
 
     # Helper for safe WinEvent reads

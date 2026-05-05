@@ -312,7 +312,7 @@ function Invoke-AuditChainVerify {
     )
 
     foreach ($log in $logs) {
-        $findings.AddRange(@(Test-AuditChainIntegrity -LogPath $log -AuditLog $AuditLog))
+        foreach ($item in (Test-AuditChainIntegrity -LogPath $log -AuditLog $AuditLog)) { $findings.Add($item) }
     }
 
     return $findings.ToArray()

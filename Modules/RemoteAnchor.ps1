@@ -270,7 +270,7 @@ function Invoke-RemoteAnchorSync {
 
     $endpoint = if ($settings -and $settings.selfProtect -and $settings.selfProtect.remoteAnchorEndpoint) { $settings.selfProtect.remoteAnchorEndpoint } else { $null }
     if ($endpoint) {
-        $findings.AddRange(@(Test-InstallFingerprintRemote -RemoteEndpoint $endpoint -AuditLog $AuditLog))
+        foreach ($item in (Test-InstallFingerprintRemote -RemoteEndpoint $endpoint -AuditLog $AuditLog)) { $findings.Add($item) }
     } else {
         Write-Host '  [RemoteAnchor] No remote endpoint configured (settings.selfProtect.remoteAnchorEndpoint).' -ForegroundColor DarkGray
     }

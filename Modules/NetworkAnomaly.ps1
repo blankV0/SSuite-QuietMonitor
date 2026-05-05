@@ -211,8 +211,7 @@ function Invoke-NetworkAnomalyDetection {
     }
 
     # Summarize if no anomalies beyond suspicious ports
-    $netFindings = @($findings | Where-Object { $_.Name -ne 'net-new-external-ips' })
-    if ($newIPs.Count -eq 0 -and $netFindings.Count -eq 0) {
+    if ($newIPs.Count -eq 0 -and $findings.Count -eq 0) {
         $findings.Add([PSCustomObject]@{
             Module      = 'NetworkAnomaly'
             Severity    = 'Green'

@@ -81,7 +81,8 @@ function Invoke-TaskAudit {
             foreach ($trusted in $Whitelist.TrustedTaskPaths) {
                 # Check each action's Execute path
                 foreach ($action in $task.Actions) {
-                    if ($action.Execute -and $action.Execute.StartsWith($trusted, [System.StringComparison]::OrdinalIgnoreCase)) {
+                    $actExec = try { $action.Execute } catch { $null }
+                    if ($actExec -and $actExec.StartsWith($trusted, [System.StringComparison]::OrdinalIgnoreCase)) {
                         $isTrustedPath = $true
                         break
                     }

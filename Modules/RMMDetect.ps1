@@ -482,7 +482,7 @@ function Invoke-RMMDetection {
             Module      = 'RMMDetect'
             Severity    = $sev
             Category    = 'RMMDetection'
-            Title       = "RMM $status: $($sig.Name)"
+            Title       = "RMM ${status}: $($sig.Name)"
             Path        = ($procs | Select-Object -First 1 -ExpandProperty Path)
             Detail          = $details
             ActionTaken = if ($isAuthorized) { 'Whitelisted' } else { 'Alert' }

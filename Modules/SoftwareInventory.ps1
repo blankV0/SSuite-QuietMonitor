@@ -35,7 +35,7 @@ function Invoke-SoftwareInventory {
         $software = foreach ($path in $registryPaths) {
             if (Test-Path ($path -replace '\\\*$', '')) {
                 Get-ItemProperty -Path $path -ErrorAction SilentlyContinue |
-                    Where-Object { $_.DisplayName -and $_.DisplayName.Trim() -ne '' }
+                    Where-Object { $_.PSObject.Properties['DisplayName'] -and $_.DisplayName.Trim() -ne '' }
             }
         }
 
