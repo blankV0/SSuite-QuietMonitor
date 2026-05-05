@@ -1,6 +1,6 @@
 ﻿```
 ╔═══════════════════════════════════════╗
-║           QuietMonitor v1.0           ║
+║           QuietMonitor v2.0           ║
 ║   Endpoint Security Suite             ║
 ╚═══════════════════════════════════════╝
 ```
@@ -157,7 +157,12 @@ C:\QuietMonitor\
 │
 └── Logs\
     ├── audit.log                 ← chained tamper-evident audit trail
-    └── tamper.log                ← integrity violation events
+  ├── tamper.log                ← integrity violation events
+  ├── service_stdout.log        ← ServiceWorker live output (NSSM)
+  └── service_stderr.log        ← ServiceWorker errors (NSSM)
+
+└── Tools\
+  └── nssm.exe                  ← NSSM service wrapper (auto-downloaded)
 ```
 
 ---
@@ -170,6 +175,7 @@ C:\QuietMonitor\
 | PowerShell | 5.1 | PS 7+ recommended for full operator support |
 | .NET Framework | 4.7.2 | Required for PBKDF2/SHA256 key derivation |
 | Privileges | Administrator | Required for service, ACL, and event log operations |
+| NSSM | 2.24 | Auto-downloaded by installer. Open-source service wrapper (~300KB). Manual download: https://nssm.cc |
 | Execution Policy | RemoteSigned | Or sign scripts with a trusted certificate |
 | Disk space | ~50 MB | For logs, reports, and quarantine files |
 | Internet access | Optional | Only needed for Threat Intel API features |
@@ -184,46 +190,42 @@ C:\QuietMonitor\
 Set-ExecutionPolicy RemoteSigned -Scope LocalMachine
 ```
 
-### 2 — Create the installation directory
+### 2 — Clone the repository
 
 ```powershell
-New-Item -Path "C:\QuietMonitor" -ItemType Directory -Force
+git clone https://github.com/blankV0/SSuite-QuietMonitor.git C:\QuietMonitor
 ```
 
-### 3 — Copy the suite files
-
-```powershell
-Copy-Item -Path ".\*" -Destination "C:\QuietMonitor\" -Recurse
-```
-
-### 4 — Run the installer (creates the service, ACLs, task scheduler entry)
+### 3 — Run the installer as Administrator
 
 ```powershell
 cd C:\QuietMonitor
-# Right-click PowerShell → Run as Administrator
-.\Install-QuietMonitor.ps1
+.\Install-QuietMonitor.ps1 install
 ```
 
 The installer will:
-1. Create all required runtime directories
-2. Harden ACLs on `Config\` and `Logs\` (deny non-admin write)
-3. Build the `Config\module_hashes.json` SHA256 manifest
-4. Register the `QuietMonitorSvc` Windows Service (auto-start)
-5. Create a weekly Task Scheduler entry for the digest report
-6. Initialize the DPAPI integrity key in the registry
+1. Create all required directories (Logs, Reports, Quarantine, Tools)
+2. Download and verify NSSM 2.24 (SHA256 verified, ~300KB)
+3. Register QuietMonitorSvc as a real Windows Service via NSSM
+4. Configure service auto-restart on failure (30s delay)
+5. Redirect service stdout/stderr to C:\QuietMonitor\Logs\
+6. Harden ACLs on Config\ and Logs\
+7. Build the SHA256 integrity manifest
+8. Create weekly report Task Scheduler entry (Monday 08:00)
+9. Initialize DPAPI integrity key in registry
 
-### 5 — Configure your environment
+### 4 — Configure your environment
 
 ```powershell
 notepad C:\QuietMonitor\Config\settings.json
 ```
 
-At minimum:
-- Change `Quarantine.Password` from the default value
-- Add SMTP credentials if you want email alerts
-- Set `threatIntel.abuseIPDB.apiKey` / `virusTotal.apiKey` if available
+Change at minimum:
+- Quarantine.Password (mandatory — do not use default)
+- SMTP settings if you want email alerts
+- API keys for threat intel (optional)
 
-### 6 — Launch the interactive console
+### 5 — Launch
 
 ```powershell
 .\QuietMonitor.ps1
@@ -380,6 +382,10 @@ Every entry written to `audit.log` includes the SHA-256 hash of the previous ent
 
 A Windows Task Scheduler entry (created by the installer) calls `Run-SecuritySuite.ps1 -FullReport` every Monday at 08:00. The weekly report module aggregates findings across all reports in the retention window, calculates trend lines (improving / worsening / stable), and emails a self-contained HTML digest. The risk score, top techniques, and quarantine activity are summarized for management review.
 
+### 6 — Windows Service (NSSM)
+
+QuietMonitor runs as a real Windows Service using NSSM (Non-Sucking Service Manager). Unlike a raw PowerShell script, NSSM correctly signals the Windows Service Control Manager (SCM) that the service has started, handles graceful stop/restart, and captures all stdout/stderr output to rotating log files. The service starts automatically on boot and restarts within 30 seconds if it crashes.
+
 ---
 
 ## MITRE ATT&CK Coverage
@@ -423,7 +429,10 @@ A Windows Task Scheduler entry (created by the installer) calls `Run-SecuritySui
 
 ## Screenshots
 
-> Run the suite and contribute screenshots via a Pull Request.
+To contribute screenshots:
+1. Run the suite and take screenshots of the menu and a sample report
+2. Save to /docs/screenshots/
+3. Submit a Pull Request
 
 **Main Dashboard & Menu**
 

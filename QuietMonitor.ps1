@@ -41,7 +41,11 @@ $configDir   = Join-Path $scriptDir 'Config'
 $logsDir     = Join-Path $baseDir 'Logs'
 $reportsDir  = Join-Path $baseDir 'Reports'
 $quarantineDir = Join-Path $baseDir 'Quarantine'
+$toolsDir    = Join-Path $baseDir 'Tools'
 $auditLog    = Join-Path $logsDir 'audit.log'
+$serviceStdoutLog = Join-Path $logsDir 'service_stdout.log'
+$serviceStderrLog = Join-Path $logsDir 'service_stderr.log'
+$nssmPath    = Join-Path $toolsDir 'nssm.exe'
 $whitelistFile = Join-Path $configDir 'whitelist.json'
 $settingsFile  = Join-Path $configDir 'settings.json'
 $quarManifest  = Join-Path $quarantineDir 'quarantine_manifest.json'
@@ -84,6 +88,45 @@ function Pause-ForKey ([string]$msg = "Press ENTER to return to menu") {
     Write-Host ""
     Write-Host "  $msg" -ForegroundColor DarkGray
     $null = Read-Host
+}
+
+function Invoke-NssmCommand {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string[]]$Arguments,
+        [switch]$IgnoreExitCode
+    )
+
+    if (-not (Test-Path $nssmPath)) {
+        throw "nssm.exe missing: place file at '$nssmPath'."
+    }
+
+    $output = & $nssmPath @Arguments 2>&1
+    if (-not $IgnoreExitCode -and $LASTEXITCODE -ne 0) {
+        throw "NSSM command failed (exit $LASTEXITCODE): nssm $($Arguments -join ' ')`n$output"
+    }
+    return $output
+}
+
+function Get-NssmServiceUiStatus {
+    if (-not (Test-Path $nssmPath)) {
+        return [PSCustomObject]@{ Label = 'NOT INSTALLED'; Color = 'DarkGray' }
+    }
+
+    try {
+        $statusRaw = (Invoke-NssmCommand -Arguments @('status', $ServiceName) -IgnoreExitCode | Out-String).Trim().ToUpperInvariant()
+    } catch {
+        return [PSCustomObject]@{ Label = 'NOT INSTALLED'; Color = 'DarkGray' }
+    }
+
+    if ($statusRaw -match 'SERVICE_RUNNING') {
+        return [PSCustomObject]@{ Label = 'RUNNING'; Color = 'Green' }
+    }
+    if ($statusRaw -match 'SERVICE_STOPPED') {
+        return [PSCustomObject]@{ Label = 'STOPPED'; Color = 'Yellow' }
+    }
+
+    return [PSCustomObject]@{ Label = 'NOT INSTALLED'; Color = 'DarkGray' }
 }
 
 # ============================================================
@@ -247,13 +290,34 @@ function Show-QuarantineManager {
 # ============================================================
 function Show-AuditLogTail {
     Write-Header "Live Audit Log"
-    if (-not (Test-Path $auditLog)) {
-        Write-Status "Audit log not found. Run a scan first." 'Yellow'
+    Write-Host "  [1] audit.log" -ForegroundColor White
+    Write-Host "  [2] service_stdout.log" -ForegroundColor White
+    Write-Host "  [3] service_stderr.log" -ForegroundColor White
+    Write-Host "  [B] Back" -ForegroundColor DarkCyan
+
+    $sub = Read-MenuChoice "Action"
+    if ($sub.ToUpperInvariant() -eq 'B') { return }
+
+    $selectedPath = switch ($sub) {
+        '1' { $auditLog }
+        '2' { $serviceStdoutLog }
+        '3' { $serviceStderrLog }
+        default { $null }
+    }
+
+    if (-not $selectedPath) {
+        Write-Status "Invalid choice." 'Red'
         Pause-ForKey; return
     }
+
+    if (-not (Test-Path $selectedPath)) {
+        Write-Status "Log not found: $selectedPath" 'Yellow'
+        Pause-ForKey; return
+    }
+
     Write-Status "Showing last 40 lines. Press Ctrl+C to stop." 'DarkGray'
     Write-Host ""
-    Get-Content $auditLog -Tail 40 | ForEach-Object {
+    Get-Content $selectedPath -Tail 40 | ForEach-Object {
         $color = if ($_ -match '\[ACTION: (Quarantine|LsassAccess|RemoteServiceInstall|NewExternalIPs)') { 'Red' }
                  elseif ($_ -match '\[ACTION: ') { 'Yellow' }
                  else { 'DarkGray' }
@@ -370,12 +434,30 @@ function Edit-Settings {
 function Show-ServiceManager {
     Write-Header "Service Management"
 
-    $svc = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
+    if (-not (Test-Path $nssmPath)) {
+        Write-Status "NSSM missing. Place nssm.exe at: $nssmPath" 'Red'
+        Write-Host ""
+        Write-Host "  [I] Install Service   [B] Back" -ForegroundColor DarkCyan
 
-    if ($svc) {
+        $sub = Read-MenuChoice "Action"
+        if ($sub.ToUpperInvariant() -eq 'I') {
+            if (Test-Path $installScript) {
+                . $installScript
+                try { Install-QuietMonitorService -StartNow }
+                catch { Write-Status "Install failed: $($_.Exception.Message)" 'Red' }
+            } else {
+                Write-Status "Install-QuietMonitor.ps1 not found at $installScript" 'Red'
+            }
+            Pause-ForKey
+        }
+        return
+    }
+
+    $statusObj = Get-NssmServiceUiStatus
+
+    if ($statusObj.Label -ne 'NOT INSTALLED') {
         Write-Status "Service: $ServiceName" 'White'
-        $statusColor = switch ($svc.Status) { 'Running' { 'Green' } 'Stopped' { 'Red' } default { 'Yellow' } }
-        Write-Status "Status : $($svc.Status)" $statusColor
+        Write-Status "Status : $($statusObj.Label)" $statusObj.Color
 
         $hbFile = Join-Path $logsDir 'service_heartbeat.txt'
         if (Test-Path $hbFile) {
@@ -403,18 +485,18 @@ function Show-ServiceManager {
             Pause-ForKey
         }
         'S' {
-            try { Start-Service $ServiceName; Write-Status "Started." 'Green' }
-            catch { Write-Status "Failed: $_" 'Red' }
+            try { Invoke-NssmCommand -Arguments @('start', $ServiceName) | Out-Null; Write-Status "Started." 'Green' }
+            catch { Write-Status "Failed: $($_.Exception.Message)" 'Red' }
             Pause-ForKey
         }
         'T' {
-            try { Stop-Service $ServiceName -Force; Write-Status "Stopped." 'Yellow' }
-            catch { Write-Status "Failed: $_" 'Red' }
+            try { Invoke-NssmCommand -Arguments @('stop', $ServiceName) | Out-Null; Write-Status "Stopped." 'Yellow' }
+            catch { Write-Status "Failed: $($_.Exception.Message)" 'Red' }
             Pause-ForKey
         }
         'R' {
-            try { Restart-Service $ServiceName -Force; Write-Status "Restarted." 'Green' }
-            catch { Write-Status "Failed: $_" 'Red' }
+            try { Invoke-NssmCommand -Arguments @('restart', $ServiceName) | Out-Null; Write-Status "Restarted." 'Green' }
+            catch { Write-Status "Failed: $($_.Exception.Message)" 'Red' }
             Pause-ForKey
         }
         'U' {
@@ -730,10 +812,9 @@ function Show-MainMenu {
     } catch {}
 
     # Service status
-    $svc = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
-    $svcStatus = if ($svc) { $svc.Status } else { $null }
-    $svcLabel  = if ($svcStatus -eq 'Running') { 'RUNNING' } elseif ($svc) { $svc.Status.ToString().ToUpper() } else { 'NOT INSTALLED' }
-    $svcColor  = if ($svcStatus -eq 'Running') { 'Green'   } elseif ($svc) { 'Yellow' } else { 'DarkGray' }
+    $svcState = Get-NssmServiceUiStatus
+    $svcLabel = $svcState.Label
+    $svcColor = $svcState.Color
 
     # Quarantine count
     $quarCount = 0

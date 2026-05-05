@@ -1,0 +1,14 @@
+# Sensitive config
+Config/settings.json
+Config/threat_cache.json
+Config/uba_baseline.json
+
+# Runtime data
+Logs/
+Reports/
+Quarantine/
+Baseline/
+Tools/nssm.exe
+
+# Git
+.git/
