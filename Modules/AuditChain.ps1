@@ -129,10 +129,11 @@ function Test-AuditChainIntegrity {
 
     if (-not (Test-Path $LogPath)) {
         $findings.Add([PSCustomObject]@{
-            Module='AuditChain'; Timestamp=(Get-Date -Format 'o'); Severity='Yellow'; Category='ChainVerification'
-            Name='LogFileNotFound'; DisplayName="Log file not found: $(Split-Path $LogPath -Leaf)"
-            Path=$LogPath; Hash=''; Details='Log has not been created yet'
-            ActionTaken='Alert'; MitreId='T1070'; MitreName='Indicator Removal'
+            Severity='Yellow'; Module='AuditChain'; Category='ChainVerification'
+            Title="Log file not found: $(Split-Path $LogPath -Leaf)"
+            Detail='Log has not been created yet'
+            Path=$LogPath
+            MitreId='T1070'; MitreName='Indicator Removal'; ActionTaken='Alert'
         })
         return $findings.ToArray()
     }
@@ -140,10 +141,11 @@ function Test-AuditChainIntegrity {
     $key = script:Get-ACKey
     if (-not $key) {
         $findings.Add([PSCustomObject]@{
-            Module='AuditChain'; Timestamp=(Get-Date -Format 'o'); Severity='Yellow'; Category='ChainVerification'
-            Name='ChainKeyMissing'; DisplayName='Audit chain key not found — chain cannot be verified'
-            Path=$script:AC_REG_PATH; Hash=''; Details='Run Initialize-AuditChainKey during installation'
-            ActionTaken='Alert'; MitreId='T1562'; MitreName='Impair Defenses'
+            Severity='Yellow'; Module='AuditChain'; Category='ChainVerification'
+            Title='Audit chain key not found — chain cannot be verified'
+            Detail='Run Initialize-AuditChainKey during installation'
+            Path=$script:AC_REG_PATH
+            MitreId='T1562'; MitreName='Impair Defenses'; ActionTaken='Alert'
         })
         return $findings.ToArray()
     }
@@ -190,10 +192,11 @@ function Test-AuditChainIntegrity {
             Write-Host "  [!!!] CHAIN INTEGRITY BROKEN: $msg" -ForegroundColor Red
 
             $findings.Add([PSCustomObject]@{
-                Module='AuditChain'; Timestamp=(Get-Date -Format 'o'); Severity='Red'; Category='ChainViolation'
-                Name='AuditChainBroken'; DisplayName="Audit chain broken — $(Split-Path $LogPath -Leaf)"
-                Path=$LogPath; Hash=''; Details=$msg
-                ActionTaken='Alert'; MitreId='T1070'; MitreName='Indicator Removal'
+                Severity='Red'; Module='AuditChain'; Category='ChainViolation'
+                Title="Audit chain broken — $(Split-Path $LogPath -Leaf)"
+                Detail=$msg
+                Path=$LogPath
+                MitreId='T1070'; MitreName='Indicator Removal'; ActionTaken='Alert'
             })
         } else {
             $msg = "Chain OK: $($lines.Count) entries verified"

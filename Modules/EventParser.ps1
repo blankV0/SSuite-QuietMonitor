@@ -82,14 +82,13 @@ function Invoke-EventParser {
 
                 $findings.Add([PSCustomObject]@{
                     Module      = 'EventParser'
-                    Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
                     Severity    = $severity
                     Category    = 'Event: Failed Logon (4625)'
-                    Name        = "FailedLogon:$account"
-                    DisplayName = "Failed Logon - $account"
+                    Title       = "Failed Logon - $account"
                     Path        = ''
-                    Hash        = ''
-                    Details     = $details
+                    Detail          = $details
+                    MitreId     = 'T1110'
+                    MitreName   = 'Brute Force'
                     ActionTaken = ''
                 })
             }
@@ -125,14 +124,13 @@ function Invoke-EventParser {
                 $count = $privByAccount[$account]
                 $findings.Add([PSCustomObject]@{
                     Module      = 'EventParser'
-                    Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
                     Severity    = 'Yellow'
                     Category    = 'Event: Privilege Escalation (4672)'
-                    Name        = "PrivEsc:$account"
-                    DisplayName = "Privilege Escalation - $account"
+                    Title       = "Privilege Escalation - $account"
                     Path        = ''
-                    Hash        = ''
-                    Details     = "Special privileges assigned to '$account' $count time(s) in last 24h."
+                    Detail          = "Special privileges assigned to '$account' $count time(s) in last 24h."
+                    MitreId     = 'T1078'
+                    MitreName   = 'Valid Accounts'
                     ActionTaken = ''
                 })
             }
@@ -167,14 +165,13 @@ function Invoke-EventParser {
 
             $findings.Add([PSCustomObject]@{
                 Module      = 'EventParser'
-                Timestamp   = $ev.TimeCreated.ToString('yyyy-MM-dd HH:mm:ss')
                 Severity    = $severity
                 Category    = 'Event: New Service Install (7045)'
-                Name        = "NewService:$serviceName"
-                DisplayName = "New Service - $serviceName"
+                Title       = "New Service - $serviceName"
                 Path        = $serviceFile
-                Hash        = 'N/A'
-                Details     = "New service installed in last 24h. Name: '$serviceName'. Path: $serviceFile. Type: $serviceType. StartType: $startType"
+                Detail          = "New service installed in last 24h. Name: '$serviceName'. Path: $serviceFile. Type: $serviceType. StartType: $startType"
+                MitreId     = 'T1543'
+                MitreName   = 'Create or Modify System Process'
                 ActionTaken = ''
             })
         }
@@ -199,14 +196,13 @@ function Invoke-EventParser {
 
             $findings.Add([PSCustomObject]@{
                 Module      = 'EventParser'
-                Timestamp   = $ev.TimeCreated.ToString('yyyy-MM-dd HH:mm:ss')
                 Severity    = 'Red'
                 Category    = 'Event: Audit Log Cleared (1102)'
-                Name        = 'AuditLogCleared'
-                DisplayName = 'Security Audit Log Cleared'
+                Title       = 'Security Audit Log Cleared'
                 Path        = ''
-                Hash        = ''
-                Details     = "Security audit log was CLEARED at $($ev.TimeCreated) by '$clearedBy'. This is a critical anti-forensics indicator."
+                Detail          = "Security audit log was CLEARED at $($ev.TimeCreated) by '$clearedBy'. This is a critical anti-forensics indicator."
+                MitreId     = 'T1070.001'
+                MitreName   = 'Indicator Removal: Clear Windows Event Logs'
                 ActionTaken = ''
             })
         }
@@ -216,14 +212,13 @@ function Invoke-EventParser {
         if ($flaggedCount -eq 0) {
             $findings.Add([PSCustomObject]@{
                 Module      = 'EventParser'
-                Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
                 Severity    = 'Green'
                 Category    = 'Event Log'
-                Name        = 'EventLogClean'
-                DisplayName = 'Event Parser'
+                Title       = 'Event Parser'
                 Path        = ''
-                Hash        = ''
-                Details     = "No threat indicators found in last 24h. Checked: 4625 ($($failedLogons.Count)), 4672 ($($privEvents.Count)), 7045 ($($svcInstalls.Count)), 1102 ($($logClears.Count))"
+                Detail          = "No threat indicators found in last 24h. Checked: 4625 ($($failedLogons.Count)), 4672 ($($privEvents.Count)), 7045 ($($svcInstalls.Count)), 1102 ($($logClears.Count))"
+                MitreId     = ''
+                MitreName   = ''
                 ActionTaken = ''
             })
         }

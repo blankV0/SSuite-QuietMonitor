@@ -72,14 +72,13 @@ function Invoke-PortScan {
 
                 $findings.Add([PSCustomObject]@{
                     Module      = 'PortScan'
-                    Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
                     Severity    = $severity
                     Category    = 'Network - TCP Listener'
-                    Name        = "TCP:$port"
-                    DisplayName = "TCP Port $port ($procName)"
+                    Title       = "TCP Port $port ($procName)"
                     Path        = $procPath
-                    Hash        = $sha256
-                    Details     = $details
+                    Detail          = $details
+                    MitreId     = 'T1046'
+                    MitreName   = 'Network Service Discovery'
                     ActionTaken = ''
                 })
             }
@@ -113,14 +112,13 @@ function Invoke-PortScan {
 
                 $findings.Add([PSCustomObject]@{
                     Module      = 'PortScan'
-                    Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
                     Severity    = 'Yellow'
                     Category    = 'Network - UDP Endpoint'
-                    Name        = "UDP:$port"
-                    DisplayName = "UDP Port $port ($procName)"
+                    Title       = "UDP Port $port ($procName)"
                     Path        = $procPath
-                    Hash        = $sha256
-                    Details     = "Unexpected UDP endpoint on port $port (PID: $ownerPid / $procName)"
+                    Detail          = "Unexpected UDP endpoint on port $port (PID: $ownerPid / $procName)"
+                    MitreId     = 'T1046'
+                    MitreName   = 'Network Service Discovery'
                     ActionTaken = ''
                 })
             }
@@ -130,14 +128,13 @@ function Invoke-PortScan {
         if ($totalUnknown -eq 0) {
             $findings.Add([PSCustomObject]@{
                 Module      = 'PortScan'
-                Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
                 Severity    = 'Green'
                 Category    = 'Network'
-                Name        = 'AllPortsClean'
-                DisplayName = 'Port Scan'
+                Title       = 'Port Scan'
                 Path        = ''
-                Hash        = ''
-                Details     = "All $($tcpListeners.Count) TCP listeners and $($seenUdpPorts.Count) UDP endpoints are whitelisted."
+                Detail          = "All $($tcpListeners.Count) TCP listeners and $($seenUdpPorts.Count) UDP endpoints are whitelisted."
+                MitreId     = 'T1046'
+                MitreName   = 'Network Service Discovery'
                 ActionTaken = ''
             })
         }

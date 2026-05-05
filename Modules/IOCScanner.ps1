@@ -61,14 +61,11 @@ function Invoke-IOCScanner {
         # Return a single Green informational finding
         $findings.Add([PSCustomObject]@{
             Module      = 'IOCScanner'
-            Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
             Severity    = 'Green'
             Category    = 'IOC'
-            Name        = 'ioc-no-database'
-            DisplayName = 'IOC Database Empty'
+            Title       = 'IOC Database Empty'
             Path        = $IOCFilePath
-            Hash        = ''
-            Details     = "No IOC hashes loaded. Populate $IOCFilePath with MalwareBazaar CSV export."
+            Detail          = "No IOC hashes loaded. Populate $IOCFilePath with MalwareBazaar CSV export."
             ActionTaken = ''
             MitreId     = ''
             MitreName   = ''
@@ -113,14 +110,11 @@ function Invoke-IOCScanner {
     if ($iocCount -eq 0) {
         $findings.Add([PSCustomObject]@{
             Module      = 'IOCScanner'
-            Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
             Severity    = 'Green'
             Category    = 'IOC'
-            Name        = 'ioc-empty-database'
-            DisplayName = 'IOC Database Empty'
+            Title       = 'IOC Database Empty'
             Path        = $IOCFilePath
-            Hash        = ''
-            Details     = "IOC CSV loaded but contains 0 valid SHA256 hashes. Add hashes to $IOCFilePath."
+            Detail          = "IOC CSV loaded but contains 0 valid SHA256 hashes. Add hashes to $IOCFilePath."
             ActionTaken = ''
             MitreId     = ''
             MitreName   = ''
@@ -173,14 +167,11 @@ function Invoke-IOCScanner {
 
             $findings.Add([PSCustomObject]@{
                 Module      = 'IOCScanner'
-                Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
                 Severity    = 'Red'
                 Category    = 'IOC Match'
-                Name        = "ioc-$($proc.Id)"
-                DisplayName = "$($proc.Name) [PID $($proc.Id)] - IOC MATCH"
+                Title       = "$($proc.Name) [PID $($proc.Id)] - IOC MATCH"
                 Path        = $exePath
-                Hash        = $sha256
-                Details     = "Process '$($proc.Name)' (PID $($proc.Id)) matches IOC database entry: $displayLabel | Path: $exePath"
+                Detail          = "Process '$($proc.Name)' (PID $($proc.Id)) matches IOC database entry: $displayLabel | Path: $exePath"
                 ActionTaken = ''
                 MitreId     = 'T1204'
                 MitreName   = 'User Execution'
@@ -198,14 +189,11 @@ function Invoke-IOCScanner {
     # Summary finding (always append even on clean scan)
     $findings.Add([PSCustomObject]@{
         Module      = 'IOCScanner'
-        Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
         Severity    = if ($hits -gt 0) { 'Red' } else { 'Green' }
         Category    = 'IOC'
-        Name        = 'ioc-scan-summary'
-        DisplayName = "IOC Scan - $hits match(es)"
+        Title       = "IOC Scan - $hits match(es)"
         Path        = $IOCFilePath
-        Hash        = ''
-        Details     = "Scanned $scanned process executables against $iocCount IOC hashes. Matches: $hits."
+        Detail          = "Scanned $scanned process executables against $iocCount IOC hashes. Matches: $hits."
         ActionTaken = ''
         MitreId     = ''
         MitreName   = ''

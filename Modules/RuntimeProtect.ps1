@@ -75,9 +75,9 @@ $script:RP_TAMPER_LOG = 'C:\QuietMonitor\Logs\tamper.log'
 function script:New-RPFinding {
     param([string]$Sev, [string]$Name, [string]$Display, [string]$Details, [string]$Mitre, [string]$MitreName)
     [PSCustomObject]@{
-        Module='RuntimeProtect'; Timestamp=(Get-Date -Format 'o'); Severity=$Sev; Category='RuntimeIntegrity'
-        Name=$Name; DisplayName=$Display; Path=''; Hash=''; Details=$Details
-        ActionTaken='Alert'; MitreId=$Mitre; MitreName=$MitreName
+        Severity=$Sev; Module='RuntimeProtect'; Category='RuntimeIntegrity'
+        Title=$Display; Detail=$Details; Path=''
+        MitreId=$Mitre; MitreName=$MitreName; ActionTaken='Alert'
     }
 }
 

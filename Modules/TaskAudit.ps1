@@ -161,14 +161,13 @@ function Invoke-TaskAudit {
 
                 $findings.Add([PSCustomObject]@{
                     Module      = 'TaskAudit'
-                    Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
                     Severity    = $severity
                     Category    = 'Scheduled Task'
-                    Name        = "$taskPath$taskName"
-                    DisplayName = $taskName
+                    Title       = $taskName
                     Path        = $fullExePath
-                    Hash        = $sha256
-                    Details     = $details
+                    Detail          = $details
+                    MitreId     = 'T1053.005'
+                    MitreName   = 'Scheduled Task/Job: Scheduled Task'
                     ActionTaken = ''
                 })
             }
@@ -177,14 +176,13 @@ function Invoke-TaskAudit {
         if ($nonMicrosoftTasks -eq 0) {
             $findings.Add([PSCustomObject]@{
                 Module      = 'TaskAudit'
-                Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
                 Severity    = 'Green'
                 Category    = 'Scheduled Task'
-                Name        = 'AllTasksClean'
-                DisplayName = 'Task Audit'
+                Title       = 'Task Audit'
                 Path        = ''
-                Hash        = ''
-                Details     = "All $($allTasks.Count) scheduled tasks are Microsoft-signed or trusted."
+                Detail          = "All $($allTasks.Count) scheduled tasks are Microsoft-signed or trusted."
+                MitreId     = 'T1053.005'
+                MitreName   = 'Scheduled Task/Job: Scheduled Task'
                 ActionTaken = ''
             })
         }

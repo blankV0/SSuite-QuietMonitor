@@ -59,14 +59,11 @@ function Invoke-PersistenceHunter {
               $MitreId = 'T1547', $MitreName = 'Boot/Logon Autostart Execution')
         [PSCustomObject]@{
             Module      = 'PersistenceHunter'
-            Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
             Severity    = $Severity
             Category    = $Category
-            Name        = $Name
-            DisplayName = $DisplayName
+            Title       = $DisplayName
             Path        = $Path
-            Hash        = $Hash
-            Details     = $Details
+            Detail          = $Details
             ActionTaken = ''
             MitreId     = $MitreId
             MitreName   = $MitreName

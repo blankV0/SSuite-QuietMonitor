@@ -118,14 +118,13 @@ function Invoke-ServiceAudit {
 
                 $findings.Add([PSCustomObject]@{
                     Module      = 'ServiceAudit'
-                    Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
                     Severity    = $severity
                     Category    = 'Service'
-                    Name        = $svc.ServiceName
-                    DisplayName = $svc.DisplayName
+                    Title       = $svc.DisplayName
                     Path        = $exePath
-                    Hash        = $sha256
-                    Details     = $details
+                    Detail          = $details
+                    MitreId     = 'T1543'
+                    MitreName   = 'Create or Modify System Process'
                     ActionTaken = ''
                 })
             }
@@ -135,14 +134,13 @@ function Invoke-ServiceAudit {
         if ($unknownCount -eq 0) {
             $findings.Add([PSCustomObject]@{
                 Module      = 'ServiceAudit'
-                Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
                 Severity    = 'Green'
                 Category    = 'Service'
-                Name        = 'AllServicesClean'
-                DisplayName = 'Service Audit'
+                Title       = 'Service Audit'
                 Path        = ''
-                Hash        = ''
-                Details     = "All $($runningServices.Count) running services are whitelisted."
+                Detail          = "All $($runningServices.Count) running services are whitelisted."
+                MitreId     = 'T1543'
+                MitreName   = 'Create or Modify System Process'
                 ActionTaken = ''
             })
         }

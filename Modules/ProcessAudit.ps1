@@ -132,14 +132,13 @@ function Invoke-ProcessAudit {
             if ($severity) {
                 $findings.Add([PSCustomObject]@{
                     Module      = 'ProcessAudit'
-                    Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
                     Severity    = $severity
                     Category    = 'Running Process'
-                    Name        = $proc.ProcessName
-                    DisplayName = "$($proc.ProcessName) (PID: $($proc.Id))"
+                    Title       = "$($proc.ProcessName) (PID: $($proc.Id))"
                     Path        = $exePath
-                    Hash        = $sha256
-                    Details     = $detailParts -join ' | '
+                    Detail          = $detailParts -join ' | '
+                    MitreId     = 'T1057'
+                    MitreName   = 'Process Discovery'
                     ActionTaken = ''
                 })
             }
@@ -148,14 +147,13 @@ function Invoke-ProcessAudit {
         if ($flaggedCount -eq 0) {
             $findings.Add([PSCustomObject]@{
                 Module      = 'ProcessAudit'
-                Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
                 Severity    = 'Green'
                 Category    = 'Running Process'
-                Name        = 'AllProcessesClean'
-                DisplayName = 'Process Audit'
+                Title       = 'Process Audit'
                 Path        = ''
-                Hash        = ''
-                Details     = "Audited $processedCount accessible processes. No unsigned executables in suspicious paths."
+                Detail          = "Audited $processedCount accessible processes. No unsigned executables in suspicious paths."
+                MitreId     = 'T1057'
+                MitreName   = 'Process Discovery'
                 ActionTaken = ''
             })
         }

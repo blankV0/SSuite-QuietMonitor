@@ -124,14 +124,11 @@ function Invoke-LateralMovementScan {
 
         $findings.Add([PSCustomObject]@{
             Module      = 'LateralMovement'
-            Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
             Severity    = $severity
             Category    = 'Admin Share Access'
-            Name        = "lateral-share-$([System.Math]::Abs($kv.Key.GetHashCode()))"
-            DisplayName = "Admin share '$($entry.ShareName)' accessed from $($entry.IP)"
+            Title       = "Admin share '$($entry.ShareName)' accessed from $($entry.IP)"
             Path        = ''
-            Hash        = ''
-            Details     = "Event 5140: Admin share '$($entry.ShareName)' accessed $count time(s) from source IP '$($entry.IP)' by account '$($entry.Account)' in the last $LookbackHours hours. Threshold=$ShareAccessThreshold."
+            Detail          = "Event 5140: Admin share '$($entry.ShareName)' accessed $count time(s) from source IP '$($entry.IP)' by account '$($entry.Account)' in the last $LookbackHours hours. Threshold=$ShareAccessThreshold."
             ActionTaken = ''
             MitreId     = 'T1021.002'
             MitreName   = 'Remote Services: SMB/Windows Admin Shares'
@@ -164,14 +161,11 @@ function Invoke-LateralMovementScan {
             if ($isRemoteExec) {
                 $findings.Add([PSCustomObject]@{
                     Module      = 'LateralMovement'
-                    Timestamp   = $ev.TimeCreated.ToString('yyyy-MM-dd HH:mm:ss')
                     Severity    = 'Red'
                     Category    = 'Remote Service Install'
-                    Name        = "lateral-svc-$([System.Math]::Abs($serviceName.GetHashCode()))"
-                    DisplayName = "Remote Exec Service: $serviceName"
+                    Title       = "Remote Exec Service: $serviceName"
                     Path        = $imagePath
-                    Hash        = ''
-                    Details     = "Event 7045: New service '$serviceName' installed with binary '$imagePath' running as '$account'. Service name/path matches known remote execution tool (PsExec, PAExec, RemCom, WinExe)."
+                    Detail          = "Event 7045: New service '$serviceName' installed with binary '$imagePath' running as '$account'. Service name/path matches known remote execution tool (PsExec, PAExec, RemCom, WinExe)."
                     ActionTaken = ''
                     MitreId     = 'T1021.002'
                     MitreName   = 'Remote Services: SMB/Windows Admin Shares'
@@ -223,14 +217,11 @@ function Invoke-LateralMovementScan {
         if ($entry.Count -ge $RemoteLogonThreshold) {
             $findings.Add([PSCustomObject]@{
                 Module      = 'LateralMovement'
-                Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
                 Severity    = 'Red'
                 Category    = 'High-Volume Remote Logon'
-                Name        = "lateral-logon-$([System.Math]::Abs($kv.Key.GetHashCode()))"
-                DisplayName = "High remote logon count: $($entry.Account) from $($entry.IP)"
+                Title       = "High remote logon count: $($entry.Account) from $($entry.IP)"
                 Path        = ''
-                Hash        = ''
-                Details     = "Event 4624 (Type 3/Network): Account '$($entry.Account)' authenticated $($entry.Count) time(s) from '$($entry.IP)' in $LookbackHours hours. Possible Pass-the-Hash, credential stuffing, or automated lateral movement. Threshold=$RemoteLogonThreshold."
+                Detail          = "Event 4624 (Type 3/Network): Account '$($entry.Account)' authenticated $($entry.Count) time(s) from '$($entry.IP)' in $LookbackHours hours. Possible Pass-the-Hash, credential stuffing, or automated lateral movement. Threshold=$RemoteLogonThreshold."
                 ActionTaken = ''
                 MitreId     = 'T1021.002'
                 MitreName   = 'Remote Services: SMB/Windows Admin Shares'
@@ -253,14 +244,11 @@ function Invoke-LateralMovementScan {
     if ($findings.Count -eq 0) {
         $findings.Add([PSCustomObject]@{
             Module      = 'LateralMovement'
-            Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
             Severity    = 'Green'
             Category    = 'Lateral Movement'
-            Name        = 'lateral-clean'
-            DisplayName = 'Lateral Movement Scan - Clean'
+            Title       = 'Lateral Movement Scan - Clean'
             Path        = ''
-            Hash        = ''
-            Details     = "No lateral movement indicators in last $LookbackHours hours. Checked: admin share access (5140), remote service installs (7045), high-volume network logons (4624)."
+            Detail          = "No lateral movement indicators in last $LookbackHours hours. Checked: admin share access (5140), remote service installs (7045), high-volume network logons (4624)."
             ActionTaken = ''
             MitreId     = 'T1021.002'
             MitreName   = 'Remote Services: SMB/Windows Admin Shares'

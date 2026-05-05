@@ -48,14 +48,11 @@ function script:New-BaselineFinding {
     param($Sev, $Cat, $Name, $DisplayName, $Path, $Details, $MitreId, $MitreName)
     [PSCustomObject]@{
         Module      = 'Baseline'
-        Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
         Severity    = $Sev
         Category    = $Cat
-        Name        = $Name
-        DisplayName = $DisplayName
+        Title       = $DisplayName
         Path        = $Path
-        Hash        = ''
-        Details     = $Details
+        Detail          = $Details
         ActionTaken = ''
         MitreId     = $MitreId
         MitreName   = $MitreName
@@ -472,10 +469,9 @@ function Invoke-BaselineDrift {
     $cfg = script:Load-BaselineSettings
     if ($cfg -and $cfg.enabled -eq $false) {
         return @([PSCustomObject]@{
-            Module='Baseline'; Timestamp=(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
-            Severity='Green'; Category='Baseline'; Name='baseline-disabled'
-            DisplayName='Baseline: Disabled'; Path=''; Hash=''; Details='Baseline drift detection is disabled in settings.json.'
-            ActionTaken=''; MitreId=''; MitreName=''
+            Severity='Green'; Module='Baseline'; Category='Baseline'
+            Title='Baseline: Disabled'; Detail='Baseline drift detection is disabled in settings.json.'
+            Path=''; MitreId=''; MitreName=''; ActionTaken=''
         })
     }
 

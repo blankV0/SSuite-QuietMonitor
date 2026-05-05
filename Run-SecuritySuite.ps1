@@ -276,9 +276,9 @@ $greenTotal  = @($allFindings | Where-Object { $_.Severity -eq 'Green'  }).Count
 $riskScore = if (Get-Command 'Get-RiskScore' -ErrorAction SilentlyContinue) { Get-RiskScore -Findings $allFindings } else { 0 }
 $riskInfo  = if (Get-Command 'Get-RiskLevel' -ErrorAction SilentlyContinue) { Get-RiskLevel -Score $riskScore } else { [PSCustomObject]@{Level='N/A';Color='';ConsoleColor='Gray'} }
 
-$newSW   = @($allFindings | Where-Object {$_.Module -eq 'Baseline' -and $_.Category -match 'Software' -and $_.Name -match 'NEW'} | ForEach-Object { $_.DisplayName })
-$newSvc  = @($allFindings | Where-Object {$_.Module -eq 'Baseline' -and $_.Category -match 'Service'  -and $_.Name -match 'NEW'} | ForEach-Object { $_.DisplayName })
-$newUsr  = @($allFindings | Where-Object {$_.Module -eq 'Baseline' -and $_.Category -match 'User'     -and $_.Name -match 'NEW'} | ForEach-Object { $_.DisplayName })
+$newSW   = @($allFindings | Where-Object {$_.Module -eq 'Baseline' -and $_.Category -match 'Software' -and $_.Title -match 'NEW'} | ForEach-Object { $_.Title })
+$newSvc  = @($allFindings | Where-Object {$_.Module -eq 'Baseline' -and $_.Category -match 'Service'  -and $_.Title -match 'NEW'} | ForEach-Object { $_.Title })
+$newUsr  = @($allFindings | Where-Object {$_.Module -eq 'Baseline' -and $_.Category -match 'User'     -and $_.Title -match 'NEW'} | ForEach-Object { $_.Title })
 $vulnCnt  = @($allFindings | Where-Object {$_.Module -eq 'VulnCheck'}).Count
 $patchCnt = @($allFindings | Where-Object {$_.Module -eq 'VulnCheck' -and $_.Category -match 'Patch'}).Count
 $quarCnt  = @($allFindings | Where-Object {$_.ActionTaken -match 'Quarantine'}).Count
@@ -314,8 +314,8 @@ if (-not $ScanOnly) {
         Write-Host "--- Response Phase ----------------------------------" -ForegroundColor DarkGray
         Write-Host "  [!] $($redFindings.Count) RED threat(s) detected:" -ForegroundColor Red
         foreach ($f in $redFindings) {
-            Write-Host "      [$($f.Module)] $($f.Name)" -ForegroundColor Red
-            Write-Host "        $($f.Details)" -ForegroundColor DarkRed
+            Write-Host "      [$($f.Module)] $($f.Title)" -ForegroundColor Red
+            Write-Host "        $($f.Detail)" -ForegroundColor DarkRed
             if ($f.Path) {
                 Write-Host "        Path: $($f.Path)" -ForegroundColor DarkGray
             }
@@ -338,7 +338,7 @@ if (-not $ScanOnly) {
                         try {
                             $result = Invoke-QuarantineFile `
                                 -FilePath       $finding.Path `
-                                -Reason         $finding.Details `
+                                -Reason         $finding.Detail `
                                 -QuarantinePath $QuarantinePath `
                                 -Password       $Settings.Quarantine.Password `
                                 -AuditLog       $AuditLog `

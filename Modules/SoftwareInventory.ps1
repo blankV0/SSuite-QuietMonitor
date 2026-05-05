@@ -84,14 +84,13 @@ function Invoke-SoftwareInventory {
 
         $findings.Add([PSCustomObject]@{
             Module      = 'SoftwareInventory'
-            Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
             Severity    = 'Green'
             Category    = 'Software Inventory'
-            Name        = 'InventoryExported'
-            DisplayName = 'Software Inventory'
+            Title       = 'Software Inventory'
             Path        = $csvFile
-            Hash        = ''
-            Details     = "Exported $($sorted.Count) unique installed applications to: $csvFile"
+            Detail          = "Exported $($sorted.Count) unique installed applications to: $csvFile"
+            MitreId     = 'T1518'
+            MitreName   = 'Software Discovery'
             ActionTaken = ''
         })
 

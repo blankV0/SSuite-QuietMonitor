@@ -332,11 +332,11 @@ function Invoke-WhitelistIntegrityCheck {
     # Check encrypted files exist when protection is supposed to be active
     if ((Test-Path $script:WLP_SALT) -and (-not (Test-Path $script:WLP_ENC) -or -not (Test-Path $script:WLP_SIG))) {
         $findings.Add([PSCustomObject]@{
-            Module      = 'WhitelistProtection'; Timestamp = (Get-Date -Format 'o')
+            Module      = 'WhitelistProtection'
             Severity    = 'Red'; Category = 'IntegrityViolation'
-            Name        = 'WhitelistEncryptionFileMissing'
-            DisplayName = 'Whitelist encryption file missing'
-            Path        = $script:WLP_BASE; Hash = ''; Details = 'whitelist.enc or whitelist.sig missing but salt exists — possible tamper/wipe attempt'
+            Title       = 'Whitelist encryption file missing'
+            Detail      = 'whitelist.enc or whitelist.sig missing but salt exists — possible tamper/wipe attempt'
+            Path        = $script:WLP_BASE
             ActionTaken = 'Alert'; MitreId = 'T1562'; MitreName = 'Impair Defenses'
         })
     }
@@ -345,11 +345,11 @@ function Invoke-WhitelistIntegrityCheck {
     $plainPath = 'C:\QuietMonitor\Config\whitelist.json'
     if ((Test-Path $script:WLP_ENC) -and (Test-Path $plainPath)) {
         $findings.Add([PSCustomObject]@{
-            Module      = 'WhitelistProtection'; Timestamp = (Get-Date -Format 'o')
+            Module      = 'WhitelistProtection'
             Severity    = 'Yellow'; Category = 'PolicyViolation'
-            Name        = 'PlaintextWhitelistCoexists'
-            DisplayName = 'Plaintext whitelist.json found alongside encrypted version'
-            Path        = $plainPath; Hash = ''; Details = 'Encrypted whitelist is active but plaintext copy still exists on disk — risk of unauthorised modification'
+            Title       = 'Plaintext whitelist.json found alongside encrypted version'
+            Detail      = 'Encrypted whitelist is active but plaintext copy still exists on disk — risk of unauthorised modification'
+            Path        = $plainPath
             ActionTaken = 'Alert'; MitreId = 'T1553'; MitreName = 'Subvert Trust Controls'
         })
     }
@@ -368,11 +368,11 @@ function Invoke-WhitelistIntegrityCheck {
         $ok = Test-WhitelistRemoteIntegrity -RemoteUrl $remoteUrl -AuditLog $AuditLog
         if (-not $ok) {
             $findings.Add([PSCustomObject]@{
-                Module      = 'WhitelistProtection'; Timestamp = (Get-Date -Format 'o')
+                Module      = 'WhitelistProtection'
                 Severity    = 'Red'; Category = 'IntegrityViolation'
-                Name        = 'WhitelistRemoteMismatch'
-                DisplayName = 'Whitelist remote anchor MISMATCH — possible tamper'
-                Path        = $script:WLP_SIG; Hash = ''; Details = "Local signature does not match remote anchor at $remoteUrl"
+                Title       = 'Whitelist remote anchor MISMATCH — possible tamper'
+                Detail      = "Local signature does not match remote anchor at $remoteUrl"
+                Path        = $script:WLP_SIG
                 ActionTaken = 'ScanAborted'; MitreId = 'T1562'; MitreName = 'Impair Defenses'
             })
         }

@@ -214,14 +214,11 @@ namespace QM.Native {
 
             $findings.Add([PSCustomObject]@{
                 Module      = 'MemoryInjection'
-                Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
                 Severity    = $severity
                 Category    = 'Memory Injection'
-                Name        = "memscan-$($proc.Id)"
-                DisplayName = "$($proc.Name) [PID $($proc.Id)] - $regionCount executable private region(s)"
+                Title       = "$($proc.Name) [PID $($proc.Id)] - $regionCount executable private region(s)"
                 Path        = $exePath
-                Hash        = ''
-                Details     = "Process '$($proc.Name)' (PID $($proc.Id)) has $regionCount committed executable private memory region(s) with no file backing. Largest: $sizeLabel. This may indicate code injection, shellcode, or reflective DLL. Path: $(if ($exePath) { $exePath } else { 'N/A' })"
+                Detail          = "Process '$($proc.Name)' (PID $($proc.Id)) has $regionCount committed executable private memory region(s) with no file backing. Largest: $sizeLabel. This may indicate code injection, shellcode, or reflective DLL. Path: $(if ($exePath) { $exePath } else { 'N/A' })"
                 ActionTaken = ''
                 MitreId     = 'T1055'
                 MitreName   = 'Process Injection'
@@ -241,14 +238,11 @@ namespace QM.Native {
     # Summary finding
     $findings.Add([PSCustomObject]@{
         Module      = 'MemoryInjection'
-        Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
         Severity    = if ($suspicious -gt 0) { 'Yellow' } else { 'Green' }
         Category    = 'Memory Injection'
-        Name        = 'memscan-summary'
-        DisplayName = "Memory Injection Scan - $suspicious process(es) flagged"
+        Title       = "Memory Injection Scan - $suspicious process(es) flagged"
         Path        = ''
-        Hash        = ''
-        Details     = "Scanned $scanned processes for executable private memory regions (min size: $MinRegionSize bytes). Suspicious: $suspicious. Skipped (JIT/protected): $skipped."
+        Detail          = "Scanned $scanned processes for executable private memory regions (min size: $MinRegionSize bytes). Suspicious: $suspicious. Skipped (JIT/protected): $skipped."
         ActionTaken = ''
         MitreId     = 'T1055'
         MitreName   = 'Process Injection'

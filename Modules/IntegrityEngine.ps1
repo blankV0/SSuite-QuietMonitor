@@ -86,9 +86,9 @@ function script:Get-IEFileHash {
 function script:New-IEFinding {
     param([string]$Sev, [string]$Cat, [string]$Name, [string]$Display, [string]$Path, [string]$Hash, [string]$Details, [string]$Mitre, [string]$MitreName)
     [PSCustomObject]@{
-        Module='IntegrityEngine'; Timestamp=(Get-Date -Format 'o'); Severity=$Sev; Category=$Cat
-        Name=$Name; DisplayName=$Display; Path=$Path; Hash=$Hash; Details=$Details
-        ActionTaken='Alert'; MitreId=$Mitre; MitreName=$MitreName
+        Severity=$Sev; Module='IntegrityEngine'; Category=$Cat
+        Title=$Display; Detail=$Details; Path=$Path
+        MitreId=$Mitre; MitreName=$MitreName; ActionTaken='Alert'
     }
 }
 

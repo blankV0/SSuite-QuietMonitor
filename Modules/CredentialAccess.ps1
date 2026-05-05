@@ -142,14 +142,11 @@ function Invoke-CredentialAccessMonitor {
             foreach ($access in $lsassAccesses) {
                 $findings.Add([PSCustomObject]@{
                     Module      = 'CredentialAccess'
-                    Timestamp   = $access.Time.ToString('yyyy-MM-dd HH:mm:ss')
                     Severity    = $access.Severity
                     Category    = 'LSASS Access'
-                    Name        = "cred-lsass-$($access.SourcePID)"
-                    DisplayName = "[Sysmon] $([System.IO.Path]::GetFileName($access.SourceImage)) accessed lsass.exe"
+                    Title       = "[Sysmon] $([System.IO.Path]::GetFileName($access.SourceImage)) accessed lsass.exe"
                     Path        = $access.SourceImage
-                    Hash        = ''
-                    Details     = "Sysmon Event 10: '$($access.SourceImage)' (PID $($access.SourcePID)) opened lsass.exe with GrantedAccess=$($access.GrantedAccess). CallTrace: $($access.CallTrace.Substring(0,[Math]::Min(200,$access.CallTrace.Length)))"
+                    Detail          = "Sysmon Event 10: '$($access.SourceImage)' (PID $($access.SourcePID)) opened lsass.exe with GrantedAccess=$($access.GrantedAccess). CallTrace: $($access.CallTrace.Substring(0,[Math]::Min(200,$access.CallTrace.Length)))"
                     ActionTaken = ''
                     MitreId     = 'T1003.001'
                     MitreName   = 'OS Credential Dumping: LSASS Memory'
@@ -167,14 +164,11 @@ function Invoke-CredentialAccessMonitor {
         } else {
             $findings.Add([PSCustomObject]@{
                 Module      = 'CredentialAccess'
-                Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
                 Severity    = 'Green'
                 Category    = 'LSASS Access'
-                Name        = 'cred-lsass-clean'
-                DisplayName = 'LSASS Access - No Sysmon Events'
+                Title       = 'LSASS Access - No Sysmon Events'
                 Path        = ''
-                Hash        = ''
-                Details     = "Sysmon is active. No ProcessAccess events targeting lsass.exe in the last $LookbackHours hours."
+                Detail          = "Sysmon is active. No ProcessAccess events targeting lsass.exe in the last $LookbackHours hours."
                 ActionTaken = ''
                 MitreId     = 'T1003.001'
                 MitreName   = 'OS Credential Dumping: LSASS Memory'
@@ -184,14 +178,11 @@ function Invoke-CredentialAccessMonitor {
         # No Sysmon - record informational finding
         $findings.Add([PSCustomObject]@{
             Module      = 'CredentialAccess'
-            Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
             Severity    = 'Yellow'
             Category    = 'LSASS Access'
-            Name        = 'cred-no-sysmon'
-            DisplayName = 'Sysmon Not Installed - Limited Visibility'
+            Title       = 'Sysmon Not Installed - Limited Visibility'
             Path        = ''
-            Hash        = ''
-            Details     = 'Sysmon is not installed. LSASS process-access monitoring requires Sysmon (Event ID 10). Install Sysmon for full credential access detection: https://learn.microsoft.com/sysinternals/downloads/sysmon'
+            Detail          = 'Sysmon is not installed. LSASS process-access monitoring requires Sysmon (Event ID 10). Install Sysmon for full credential access detection: https://learn.microsoft.com/sysinternals/downloads/sysmon'
             ActionTaken = ''
             MitreId     = 'T1003.001'
             MitreName   = 'OS Credential Dumping: LSASS Memory'
@@ -240,14 +231,11 @@ function Invoke-CredentialAccessMonitor {
 
         $findings.Add([PSCustomObject]@{
             Module      = 'CredentialAccess'
-            Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
             Severity    = $severity
             Category    = 'Explicit Credential Use'
-            Name        = "cred-explicit-$([System.Math]::Abs($kv.Key.GetHashCode()))"
-            DisplayName = "Explicit Credentials: $($entry.Account) -> $($entry.Target)"
+            Title       = "Explicit Credentials: $($entry.Account) -> $($entry.Target)"
             Path        = $entry.Process
-            Hash        = ''
-            Details     = "Event 4648: '$($entry.Account)' used explicit credentials $count time(s) in last $LookbackHours hours to authenticate as '$($entry.Target)' on server '$($entry.Server)' via '$($entry.Process)'."
+            Detail          = "Event 4648: '$($entry.Account)' used explicit credentials $count time(s) in last $LookbackHours hours to authenticate as '$($entry.Target)' on server '$($entry.Server)' via '$($entry.Process)'."
             ActionTaken = ''
             MitreId     = 'T1003.001'
             MitreName   = 'OS Credential Dumping: LSASS Memory'

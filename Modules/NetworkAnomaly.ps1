@@ -111,14 +111,11 @@ function Invoke-NetworkAnomalyDetection {
         if ($suspiciousPorts -contains $conn.RemotePort) {
             $findings.Add([PSCustomObject]@{
                 Module      = 'NetworkAnomaly'
-                Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
                 Severity    = 'Red'
                 Category    = 'Suspicious Port'
-                Name        = "net-suspport-$($conn.RemoteIP)-$($conn.RemotePort)"
-                DisplayName = "$($conn.Process) -> $($conn.RemoteIP):$($conn.RemotePort)"
+                Title       = "$($conn.Process) -> $($conn.RemoteIP):$($conn.RemotePort)"
                 Path        = ''
-                Hash        = ''
-                Details     = "Process '$($conn.Process)' (PID $($conn.PID)) has an established connection to $($conn.RemoteIP):$($conn.RemotePort) - this port is commonly associated with C2 traffic, RATs, or coin mining."
+                Detail          = "Process '$($conn.Process)' (PID $($conn.PID)) has an established connection to $($conn.RemoteIP):$($conn.RemotePort) - this port is commonly associated with C2 traffic, RATs, or coin mining."
                 ActionTaken = ''
                 MitreId     = 'T1071'
                 MitreName   = 'Application Layer Protocol'
@@ -146,14 +143,11 @@ function Invoke-NetworkAnomalyDetection {
 
         $findings.Add([PSCustomObject]@{
             Module      = 'NetworkAnomaly'
-            Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
             Severity    = 'Green'
             Category    = 'Network Baseline'
-            Name        = 'net-baseline-created'
-            DisplayName = 'Network Baseline Created'
+            Title       = 'Network Baseline Created'
             Path        = $BaselinePath
-            Hash        = ''
-            Details     = "Network baseline created with $($currentIPs.Count) unique external IPs and $($currentExternal.Count) active connections. Future scans will compare against this baseline."
+            Detail          = "Network baseline created with $($currentIPs.Count) unique external IPs and $($currentExternal.Count) active connections. Future scans will compare against this baseline."
             ActionTaken = ''
             MitreId     = 'T1049'
             MitreName   = 'System Network Connections Discovery'
@@ -198,14 +192,11 @@ function Invoke-NetworkAnomalyDetection {
 
         $findings.Add([PSCustomObject]@{
             Module      = 'NetworkAnomaly'
-            Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
             Severity    = $severity
             Category    = 'New External IPs'
-            Name        = 'net-new-external-ips'
-            DisplayName = "$($newIPs.Count) new external IP(s) detected"
+            Title       = "$($newIPs.Count) new external IP(s) detected"
             Path        = ''
-            Hash        = ''
-            Details     = "$($newIPs.Count) external IP(s) not in baseline detected. New IPs: $($newIPs -join ', '). Processes: $procDetails. Baseline date: $($baseline.CreatedAt). Use -ForceBaseline to update baseline."
+            Detail          = "$($newIPs.Count) external IP(s) not in baseline detected. New IPs: $($newIPs -join ', '). Processes: $procDetails. Baseline date: $($baseline.CreatedAt). Use -ForceBaseline to update baseline."
             ActionTaken = ''
             MitreId     = 'T1071'
             MitreName   = 'Application Layer Protocol'
@@ -224,14 +215,11 @@ function Invoke-NetworkAnomalyDetection {
     if ($newIPs.Count -eq 0 -and $netFindings.Count -eq 0) {
         $findings.Add([PSCustomObject]@{
             Module      = 'NetworkAnomaly'
-            Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
             Severity    = 'Green'
             Category    = 'Network Anomaly'
-            Name        = 'net-clean'
-            DisplayName = "Network Anomaly Scan - Clean"
+            Title       = "Network Anomaly Scan - Clean"
             Path        = ''
-            Hash        = ''
-            Details     = "All $($currentIPs.Count) external IPs match baseline. $($currentExternal.Count) established external connections. No suspicious ports detected."
+            Detail          = "All $($currentIPs.Count) external IPs match baseline. $($currentExternal.Count) established external connections. No suspicious ports detected."
             ActionTaken = ''
             MitreId     = 'T1049'
             MitreName   = 'System Network Connections Discovery'

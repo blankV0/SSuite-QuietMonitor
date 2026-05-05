@@ -114,14 +114,11 @@ function Invoke-StartupAudit {
 
         return [PSCustomObject]@{
             Module      = 'StartupAudit'
-            Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
             Severity    = $severity
             Category    = 'Startup Persistence'
-            Name        = $EntryName
-            DisplayName = "$EntryName ($Source)"
+            Title       = "$EntryName ($Source)"
             Path        = $exePath
-            Hash        = $sha256
-            Details     = $details
+            Detail          = $details
             ActionTaken = ''
         }
     }
@@ -164,14 +161,11 @@ function Invoke-StartupAudit {
         if ($unknownCount -eq 0) {
             $findings.Add([PSCustomObject]@{
                 Module      = 'StartupAudit'
-                Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
                 Severity    = 'Green'
                 Category    = 'Startup Persistence'
-                Name        = 'AllStartupClean'
-                DisplayName = 'Startup Audit'
+                Title       = 'Startup Audit'
                 Path        = ''
-                Hash        = ''
-                Details     = 'All startup registry entries and folder items are whitelisted.'
+                Detail          = 'All startup registry entries and folder items are whitelisted.'
                 ActionTaken = ''
             })
         }

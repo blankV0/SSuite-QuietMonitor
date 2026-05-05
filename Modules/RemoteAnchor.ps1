@@ -138,10 +138,11 @@ function Test-InstallFingerprintRemote {
     $local = Get-InstallFingerprint
     if (-not $local) {
         $findings.Add([PSCustomObject]@{
-            Module='RemoteAnchor'; Timestamp=(Get-Date -Format 'o'); Severity='Yellow'; Category='FingerprintCheck'
-            Name='FingerprintNotFound'; DisplayName='Installation fingerprint not found'
-            Path=$script:RA_FINGERPRINT_FILE; Hash=''; Details='Run New-InstallFingerprint during first install'
-            ActionTaken='Alert'; MitreId='T1553'; MitreName='Subvert Trust Controls'
+            Severity='Yellow'; Module='RemoteAnchor'; Category='FingerprintCheck'
+            Title='Installation fingerprint not found'
+            Detail='Run New-InstallFingerprint during first install'
+            Path=$script:RA_FINGERPRINT_FILE
+            MitreId='T1553'; MitreName='Subvert Trust Controls'; ActionTaken='Alert'
         })
         return $findings.ToArray()
     }
@@ -157,18 +158,18 @@ function Test-InstallFingerprintRemote {
             $msg = "Fingerprint MISMATCH: local=$($local.fingerprint.Substring(0,16))... remote=$($remote.fingerprint.Substring(0,16))... — possible reinstall or identity tamper"
             script:Write-RATamper $msg $AuditLog
             $findings.Add([PSCustomObject]@{
-                Module='RemoteAnchor'; Timestamp=(Get-Date -Format 'o'); Severity='Red'; Category='FingerprintMismatch'
-                Name='FingerprintRemoteMismatch'; DisplayName='Installation fingerprint changed — possible tamper'
-                Path=$script:RA_FINGERPRINT_FILE; Hash=$local.fingerprint; Details=$msg
-                ActionTaken='Alert'; MitreId='T1553'; MitreName='Subvert Trust Controls'
+                Severity='Red'; Module='RemoteAnchor'; Category='FingerprintMismatch'
+                Title='Installation fingerprint changed — possible tamper'
+                Detail=$msg; Path=$script:RA_FINGERPRINT_FILE
+                MitreId='T1553'; MitreName='Subvert Trust Controls'; ActionTaken='Alert'
             })
         } elseif ($remote.hostname -ne $local.hostname) {
             $findings.Add([PSCustomObject]@{
-                Module='RemoteAnchor'; Timestamp=(Get-Date -Format 'o'); Severity='Yellow'; Category='FingerprintCheck'
-                Name='FingerprintHostnameMismatch'; DisplayName='Hostname changed since fingerprint creation'
-                Path=$script:RA_FINGERPRINT_FILE; Hash=$local.fingerprint
-                Details="Local hostname: $($local.hostname) — Remote hostname: $($remote.hostname)"
-                ActionTaken='Alert'; MitreId='T1553'; MitreName='Subvert Trust Controls'
+                Severity='Yellow'; Module='RemoteAnchor'; Category='FingerprintCheck'
+                Title='Hostname changed since fingerprint creation'
+                Detail="Local hostname: $($local.hostname) — Remote hostname: $($remote.hostname)"
+                Path=$script:RA_FINGERPRINT_FILE
+                MitreId='T1553'; MitreName='Subvert Trust Controls'; ActionTaken='Alert'
             })
         } else {
             if ($AuditLog) { Add-Content -LiteralPath $AuditLog -Value "[$(Get-Date -Format 'o')] [RemoteAnchor] [ACTION: FingerprintVerify] [DETAILS: Remote fingerprint matches — identity confirmed]" -Encoding UTF8 -ErrorAction SilentlyContinue }

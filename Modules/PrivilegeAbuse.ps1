@@ -42,9 +42,9 @@ $script:PA_RMM_PROCESS_NAMES = @(
 function script:New-PAFinding {
     param([string]$Sev, [string]$Name, [string]$Display, [string]$Path, [string]$Details, [string]$Mitre, [string]$MitreName)
     [PSCustomObject]@{
-        Module='PrivilegeAbuse'; Timestamp=(Get-Date -Format 'o'); Severity=$Sev; Category='UnauthorizedAccess'
-        Name=$Name; DisplayName=$Display; Path=$Path; Hash=''; Details=$Details
-        ActionTaken='Alert'; MitreId=$Mitre; MitreName=$MitreName
+        Severity=$Sev; Module='PrivilegeAbuse'; Category='UnauthorizedAccess'
+        Title=$Display; Detail=$Details; Path=$Path
+        MitreId=$Mitre; MitreName=$MitreName; ActionTaken='Alert'
     }
 }
 

@@ -36,14 +36,11 @@ function script:New-RGFinding {
     param($Sev, $Cat, $Name, $DisplayName, $Path, $Details, $MitreId, $MitreName)
     [PSCustomObject]@{
         Module      = 'RansomwareGuard'
-        Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
         Severity    = $Sev
         Category    = $Cat
-        Name        = $Name
-        DisplayName = $DisplayName
+        Title       = $DisplayName
         Path        = $Path
-        Hash        = ''
-        Details     = $Details
+        Detail          = $Details
         ActionTaken = ''
         MitreId     = $MitreId
         MitreName   = $MitreName

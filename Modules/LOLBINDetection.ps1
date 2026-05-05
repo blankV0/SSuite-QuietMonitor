@@ -178,14 +178,11 @@ function Invoke-LOLBINDetection {
 
         $findings.Add([PSCustomObject]@{
             Module      = 'LOLBINDetection'
-            Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
             Severity    = $severity
             Category    = 'LOLBin Abuse'
-            Name        = "lolbin-$($proc.ProcessId)"
-            DisplayName = "$($proc.Name) [PID $($proc.ProcessId)]"
+            Title       = "$($proc.Name) [PID $($proc.ProcessId)]"
             Path        = $exePath
-            Hash        = ''
-            Details     = "$($lolInfo.Desc) | Parent: $parentName (PID $($proc.ParentProcessId)) | Reasons: $($reasons -join '; ') | CmdLine: $(if ($cmdLine) { $cmdLine.Substring(0, [Math]::Min(200, $cmdLine.Length)) } else { 'N/A' })"
+            Detail          = "$($lolInfo.Desc) | Parent: $parentName (PID $($proc.ParentProcessId)) | Reasons: $($reasons -join '; ') | CmdLine: $(if ($cmdLine) { $cmdLine.Substring(0, [Math]::Min(200, $cmdLine.Length)) } else { 'N/A' })"
             ActionTaken = ''
             MitreId     = $mitreTechnique
             MitreName   = $mitreNames[$mitreTechnique]

@@ -362,7 +362,7 @@ function script:Get-RMMInstalledSoftware {
                 $hit = $entries | Where-Object { $_.DisplayName -ilike "*$match*" }
                 foreach ($h in $hit) {
                     $found += [PSCustomObject]@{
-                        DisplayName   = $h.DisplayName
+                        Title         = $h.DisplayName
                         Version       = $h.DisplayVersion
                         InstallDate   = $h.InstallDate
                         Publisher     = $h.Publisher
@@ -480,14 +480,11 @@ function Invoke-RMMDetection {
 
         $findings.Add([PSCustomObject]@{
             Module      = 'RMMDetect'
-            Timestamp   = (Get-Date -Format 'o')
             Severity    = $sev
             Category    = 'RMMDetection'
-            Name        = "RMM_$($sig.ShortName)"
-            DisplayName = "RMM $status: $($sig.Name)"
+            Title       = "RMM $status: $($sig.Name)"
             Path        = ($procs | Select-Object -First 1 -ExpandProperty Path)
-            Hash        = ''
-            Details     = $details
+            Detail          = $details
             ActionTaken = if ($isAuthorized) { 'Whitelisted' } else { 'Alert' }
             MitreId     = 'T1219'
             MitreName   = 'Remote Access Software'
@@ -508,11 +505,12 @@ function Invoke-RMMDetection {
             if (Test-Path $extPath) {
                 $extName = $script:RMM_BROWSER_EXT_DB[$extId]
                 $findings.Add([PSCustomObject]@{
-                    Module='RMMDetect'; Timestamp=(Get-Date -Format 'o'); Severity='Yellow'
-                    Category='RMMBrowserExtension'; Name="RMMExt_$extId"
-                    DisplayName = "RMM Browser Extension: $extName ($($profile.Browser))"
-                    Path = $extPath; Hash = ''; Details = "Extension ID: $extId  Browser: $($profile.Browser)  Name: $extName"
-                    ActionTaken = 'Alert'; MitreId = 'T1176'; MitreName = 'Browser Extensions'
+                    Severity='Yellow'; Module='RMMDetect'
+                    Category='RMMBrowserExtension'
+                    Title       = "RMM Browser Extension: $extName ($($profile.Browser))"
+                    Detail      = "Extension ID: $extId  Browser: $($profile.Browser)  Name: $extName"
+                    Path = $extPath
+                    MitreId = 'T1176'; MitreName = 'Browser Extensions'; ActionTaken = 'Alert'
                 })
             }
         }

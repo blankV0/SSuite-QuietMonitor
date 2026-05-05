@@ -68,14 +68,13 @@ function Invoke-UserAudit {
             if ($severity -ne 'Green') {
                 $findings.Add([PSCustomObject]@{
                     Module      = 'UserAudit'
-                    Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
                     Severity    = $severity
                     Category    = 'User Account'
-                    Name        = $user.Name
-                    DisplayName = "$($user.Name) ($($user.FullName))"
+                    Title       = "$($user.Name) ($($user.FullName))"
                     Path        = ''
-                    Hash        = ''
-                    Details     = $details
+                    Detail          = $details
+                    MitreId     = 'T1087'
+                    MitreName   = 'Account Discovery'
                     ActionTaken = ''
                 })
             }
@@ -120,14 +119,13 @@ function Invoke-UserAudit {
 
                     $findings.Add([PSCustomObject]@{
                         Module      = 'UserAudit'
-                        Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
                         Severity    = $severity
                         Category    = "Privileged Group: $groupName"
-                        Name        = $shortName
-                        DisplayName = $memberName
+                        Title       = $memberName
                         Path        = ''
-                        Hash        = ''
-                        Details     = $details
+                        Detail          = $details
+                        MitreId     = 'T1087'
+                        MitreName   = 'Account Discovery'
                         ActionTaken = ''
                     })
                 }
@@ -137,14 +135,13 @@ function Invoke-UserAudit {
         if ($unknownAdminCount -eq 0 -and ($findings | Where-Object { $_.Severity -in 'Yellow','Red' }).Count -eq 0) {
             $findings.Add([PSCustomObject]@{
                 Module      = 'UserAudit'
-                Timestamp   = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
                 Severity    = 'Green'
                 Category    = 'User Account'
-                Name        = 'AllUsersClean'
-                DisplayName = 'User Audit'
+                Title       = 'User Audit'
                 Path        = ''
-                Hash        = ''
-                Details     = "All $($localUsers.Count) local users checked. No unauthorized admins detected."
+                Detail          = "All $($localUsers.Count) local users checked. No unauthorized admins detected."
+                MitreId     = 'T1087'
+                MitreName   = 'Account Discovery'
                 ActionTaken = ''
             })
         }

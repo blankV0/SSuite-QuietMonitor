@@ -26,9 +26,9 @@ $script:PI_EXPECTED_MODULE_PATHS = @(
 function script:New-PIFinding {
     param([string]$Sev, [string]$Name, [string]$Display, [string]$Path, [string]$Hash, [string]$Details, [string]$Mitre, [string]$MitreName)
     [PSCustomObject]@{
-        Module='ProcessIntegrity'; Timestamp=(Get-Date -Format 'o'); Severity=$Sev; Category='ProcessIntegrity'
-        Name=$Name; DisplayName=$Display; Path=$Path; Hash=$Hash; Details=$Details
-        ActionTaken='Alert'; MitreId=$Mitre; MitreName=$MitreName
+        Severity=$Sev; Module='ProcessIntegrity'; Category='ProcessIntegrity'
+        Title=$Display; Detail=$Details; Path=$Path
+        MitreId=$Mitre; MitreName=$MitreName; ActionTaken='Alert'
     }
 }
 
