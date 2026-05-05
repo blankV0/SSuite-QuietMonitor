@@ -224,11 +224,11 @@ function Show-QuarantineManager {
     }
 
     Write-Host ""
-    Write-Host "  [R] Restore a file    [D] Delete permanently    [B] Back" -ForegroundColor DarkCyan
+    Write-Host "  [E] Restore a file    [D] Delete permanently    [R] Review pending    [B] Back" -ForegroundColor DarkCyan
     $sub = Read-MenuChoice "Action"
 
     switch ($sub.ToUpperInvariant()) {
-        'R' {
+        'E' {
             $idxStr = Read-MenuChoice "Enter number of file to restore (1-$($entries.Count))"
             if ($idxStr -match '^\d+$') {
                 $idx = [int]$idxStr - 1
@@ -281,6 +281,90 @@ function Show-QuarantineManager {
                     Pause-ForKey
                 }
             }
+        }
+        'R' {
+            # Review pending service/process quarantine requests
+            $pendingFile = Join-Path $logsDir 'pending_quarantine.json'
+            if (-not (Test-Path $pendingFile)) {
+                Write-Status "No pending quarantine requests found." 'DarkGray'
+                Pause-ForKey; return
+            }
+
+            try {
+                $pending = @(Get-Content $pendingFile -Raw -Encoding UTF8 | ConvertFrom-Json -ErrorAction Stop)
+            } catch {
+                Write-Status "Failed to read pending_quarantine.json: $_" 'Red'
+                Pause-ForKey; return
+            }
+
+            if ($pending.Count -eq 0) {
+                Write-Status "Pending quarantine list is empty." 'DarkGray'
+                Pause-ForKey; return
+            }
+
+            Write-Host ""
+            Write-Status "Pending review findings ($($pending.Count)):" 'Yellow'
+            Write-Host ""
+            for ($i = 0; $i -lt $pending.Count; $i++) {
+                $p = $pending[$i]
+                $pTitle  = if ($p.PSObject.Properties['Title'])  { $p.Title }  else { '(no title)' }
+                $pModule = if ($p.PSObject.Properties['Module']) { $p.Module } else { '?' }
+                $pPath   = if ($p.PSObject.Properties['Path'])   { $p.Path }   else { '' }
+                Write-Host "  [$($i+1)] [$pModule] $pTitle" -ForegroundColor Red
+                if ($pPath) { Write-Host "        $pPath" -ForegroundColor DarkGray }
+            }
+            Write-Host ""
+            Write-Host "  [A] Review all now  [C] Clear pending list  [B] Back" -ForegroundColor DarkCyan
+            $pendingChoice = (Read-MenuChoice "Action").Trim().ToUpperInvariant()
+
+            if ($pendingChoice -eq 'B') { return }
+            if ($pendingChoice -eq 'C') {
+                Remove-Item $pendingFile -Force -ErrorAction SilentlyContinue
+                Write-Status "Pending list cleared." 'DarkGray'
+                Pause-ForKey; return
+            }
+            if ($pendingChoice -eq 'A') {
+                # Load required modules for workflow
+                $quarScript = Join-Path $modulesDir 'ServiceQuarantine.ps1'
+                $qCoreScript = Join-Path $modulesDir 'Quarantine.ps1'
+                if (-not (Test-Path $quarScript) -or -not (Test-Path $qCoreScript)) {
+                    Write-Status "ServiceQuarantine.ps1 or Quarantine.ps1 not found in Modules." 'Red'
+                    Pause-ForKey; return
+                }
+                . $qCoreScript
+                . $quarScript
+
+                $qCfg = $null
+                if (Test-Path $settingsFile) {
+                    try { $qCfg = Get-Content $settingsFile -Raw -Encoding UTF8 | ConvertFrom-Json } catch {}
+                }
+                $qPwd       = if ($qCfg -and $qCfg.Quarantine -and $qCfg.Quarantine.Password) { $qCfg.Quarantine.Password } else { '' }
+                $qBasePath  = if ($qCfg -and $qCfg.Quarantine -and $qCfg.Quarantine.BasePath)  { $qCfg.Quarantine.BasePath  } else { 'C:\QuietMonitor\Quarantine' }
+
+                $remainingPending = [System.Collections.Generic.List[PSCustomObject]]::new()
+                foreach ($pf in $pending) {
+                    $wfResult = Invoke-ServiceQuarantineWorkflow `
+                        -Finding        $pf `
+                        -Password       $qPwd `
+                        -AuditLog       $auditLog `
+                        -QuarantinePath $qBasePath `
+                        -WhitelistFile  $whitelistFile
+                    if ($wfResult -eq 'SkipAll') {
+                        $remainingPending.Add($pf)
+                        break
+                    }
+                }
+
+                if ($remainingPending.Count -gt 0) {
+                    $remainingPending.ToArray() | ConvertTo-Json -Depth 5 |
+                        Set-Content -Path $pendingFile -Encoding UTF8 -Force
+                    Write-Status "$($remainingPending.Count) finding(s) returned to pending list." 'DarkGray'
+                } else {
+                    Remove-Item $pendingFile -Force -ErrorAction SilentlyContinue
+                    Write-Status "All pending findings reviewed. Pending list cleared." 'Green'
+                }
+            }
+            Pause-ForKey
         }
     }
 }

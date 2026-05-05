@@ -122,5 +122,22 @@
     "moduleHashesPath": "Config\\module_hashes.json",
     "alertOnTamper": true,
     "monitorOwnDirectory": true
+  },
+
+  "quarantine": {
+    "_comment": "Interactive quarantine workflow for suspicious services and processes. Remove paths from knownSafePaths to increase sensitivity.",
+    "interactiveMode": true,
+    "autoSkipChromium": true,
+    "autoSkipSystemPaths": true,
+    "knownSafePaths": [
+      "C:\\Program Files\\BraveSoftware\\",
+      "C:\\Program Files\\Microsoft VS Code\\",
+      "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\",
+      "C:\\Program Files (x86)\\Lenovo\\",
+      "C:\\Windows\\System32\\DriverStore\\",
+      "C:\\Program Files\\Adobe\\",
+      "C:\\Program Files\\Proton\\",
+      "C:\\Program Files\\WindowsApps\\"
+    ]
   }
 }

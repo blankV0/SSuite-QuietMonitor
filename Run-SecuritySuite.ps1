@@ -153,7 +153,7 @@ $moduleNames = @(
     'WeeklyReport', 'Baseline', 'VulnCheck', 'ThreatIntel', 'UBA', 'RansomwareGuard', 'SelfProtect',
     'WhitelistProtection', 'IntegrityEngine', 'AuditChain', 'RuntimeProtect',
     'ProcessIntegrity', 'RemoteAnchor', 'PrivilegeAbuse', 'RMMDetect',
-    'Quarantine', 'RemoveItem', 'Alert', 'Report'
+    'Quarantine', 'ServiceQuarantine', 'RemoveItem', 'Alert', 'Report'
 )
 
 $loadErrors = 0
@@ -226,6 +226,7 @@ $detectionModules = [ordered]@{
     'RemoteAnchor'         = 'Invoke-RemoteAnchorSync'
     'PrivilegeAbuse'       = 'Invoke-PrivilegeAbuseCheck'
     'RMMDetect'            = 'Invoke-RMMDetection'
+    # ServiceQuarantine provides workflow helpers; no top-level detection function to run
 }
 
 Write-Host "--- Detection Phase ---------------------------------" -ForegroundColor DarkGray
@@ -277,6 +278,68 @@ foreach ($f in $allFindings) {
             Add-Member -InputObject $f -NotePropertyName $prop -NotePropertyValue '' -Force
         }
     }
+}
+#endregion
+
+#region -- Smart path exclusions: downgrade known-safe paths to Yellow -------
+# Read quarantine settings; fall back to built-in defaults when absent
+$quarSettings = if ($Settings.PSObject.Properties['quarantine']) { $Settings.quarantine } else { $null }
+
+$interactiveMode = $true
+if ($quarSettings -and $quarSettings.PSObject.Properties['interactiveMode']) {
+    $interactiveMode = [bool]$quarSettings.interactiveMode
+}
+
+$knownSafePaths = @(
+    'C:\Program Files\BraveSoftware\',
+    'C:\Program Files\Microsoft VS Code\',
+    'C:\Program Files (x86)\Microsoft\EdgeWebView\',
+    'C:\Program Files (x86)\Lenovo\',
+    'C:\Windows\System32\DriverStore\',
+    'C:\Program Files\Adobe\',
+    'C:\Program Files\Proton\',
+    'C:\Program Files\WindowsApps\'
+)
+if ($quarSettings -and $quarSettings.PSObject.Properties['knownSafePaths'] -and $quarSettings.knownSafePaths) {
+    $knownSafePaths = [string[]]$quarSettings.knownSafePaths
+}
+
+# Also read WhitelistedPaths from whitelist.json for per-path suppression
+$whitelistedPaths = @()
+try {
+    $wlObj = Get-Content $WhitelistFile -Raw -Encoding UTF8 | ConvertFrom-Json -ErrorAction Stop
+    if ($wlObj.PSObject.Properties['WhitelistedPaths'] -and $wlObj.WhitelistedPaths) {
+        $whitelistedPaths = [string[]]$wlObj.WhitelistedPaths
+    }
+} catch {}
+
+$downgradeCount = 0
+foreach ($f in $allFindings) {
+    if ($f.Severity -ne 'Red') { continue }
+    $fPath = if ($f.PSObject.Properties['Path']) { [string]$f.Path } else { '' }
+    if (-not $fPath) { continue }
+
+    # Downgrade if path matches a known-safe prefix
+    foreach ($safePath in $knownSafePaths) {
+        if ($fPath -like "$safePath*") {
+            $f.Severity = 'Yellow'
+            $downgradeCount++
+            break
+        }
+    }
+    if ($f.Severity -eq 'Red') {
+        # Also downgrade if path is individually whitelisted
+        foreach ($wlPath in $whitelistedPaths) {
+            if ($fPath -ieq $wlPath) {
+                $f.Severity = 'Yellow'
+                $downgradeCount++
+                break
+            }
+        }
+    }
+}
+if ($downgradeCount -gt 0) {
+    Write-Host "  [i] $downgradeCount finding(s) downgraded to YELLOW (matched known-safe/whitelisted paths)." -ForegroundColor DarkGray
 }
 #endregion
 
@@ -335,6 +398,7 @@ if (-not $ScanOnly) {
         Write-Host ""
 
         if ($AutoQuarantine) {
+            # ── Bulk auto-quarantine flow (existing) ──────────────────────────
             $quarantineCandidates = @($redFindings | Where-Object { $_.Path -and (Test-Path $_.Path -PathType Leaf -ErrorAction SilentlyContinue) })
 
             if ($quarantineCandidates.Count -eq 0) {
@@ -367,6 +431,87 @@ if (-not $ScanOnly) {
                     Write-AuditLog -Action 'QuarantineAborted' -Details 'User declined YES prompt'
                 }
             }
+
+        } elseif ($interactiveMode -and (Get-Command 'Invoke-ServiceQuarantineWorkflow' -ErrorAction SilentlyContinue)) {
+            # ── Interactive per-finding quarantine workflow ────────────────────
+            # System processes that should never be quarantined
+            $systemProcNames = @(
+                'svchost.exe','lsass.exe','csrss.exe','wininit.exe',
+                'services.exe','winlogon.exe','explorer.exe',
+                'powershell.exe','cmd.exe'
+            )
+            # Chromium/Electron apps that generate MemoryInjection false positives
+            $chromiumProcNames = @('brave.exe','msedgewebview2.exe','code.exe')
+
+            # Build eligible findings list
+            $eligibleFindings = [System.Collections.Generic.List[PSCustomObject]]::new()
+            foreach ($f in $allFindings) {
+                if ($f.Severity -ne 'Red') { continue }
+                $fPath = if ($f.PSObject.Properties['Path']) { [string]$f.Path } else { '' }
+                if (-not $fPath -or -not (Test-Path $fPath -PathType Leaf -ErrorAction SilentlyContinue)) { continue }
+
+                $fBaseName = [System.IO.Path]::GetFileName($fPath).ToLowerInvariant()
+
+                # Skip Windows system processes
+                if ($systemProcNames -icontains $fBaseName) { continue }
+
+                # Skip MemoryInjection false positives for Chromium/Electron
+                $fModule = if ($f.PSObject.Properties['Module']) { $f.Module } else { '' }
+                if ($fModule -eq 'MemoryInjection' -and ($chromiumProcNames -icontains $fBaseName)) { continue }
+
+                $eligibleFindings.Add($f)
+            }
+
+            if ($eligibleFindings.Count -eq 0) {
+                Write-Host "  [i] No actionable Red findings require interactive review." -ForegroundColor Gray
+            } else {
+                Write-Host "  [i] $($eligibleFindings.Count) finding(s) available for interactive review." -ForegroundColor Yellow
+                Write-Host ""
+
+                $skipAll        = $false
+                $pendingFindings = [System.Collections.Generic.List[PSCustomObject]]::new()
+                $pendingFile    = 'C:\QuietMonitor\Logs\pending_quarantine.json'
+
+                for ($fi = 0; $fi -lt $eligibleFindings.Count; $fi++) {
+                    if ($skipAll) {
+                        $pendingFindings.Add($eligibleFindings[$fi])
+                        continue
+                    }
+
+                    Write-Host "  ── Finding $($fi + 1) of $($eligibleFindings.Count) ──────────────────────" -ForegroundColor DarkGray
+
+                    $wfResult = Invoke-ServiceQuarantineWorkflow `
+                        -Finding        $eligibleFindings[$fi] `
+                        -Password       $Settings.Quarantine.Password `
+                        -AuditLog       $AuditLog `
+                        -QuarantinePath $QuarantinePath `
+                        -WhitelistFile  $WhitelistFile
+
+                    if ($wfResult -eq 'SkipAll') {
+                        $skipAll = $true
+                        $pendingFindings.Add($eligibleFindings[$fi])   # include the skipped finding itself
+                        # remaining added by the $skipAll guard above on next iterations
+                    }
+                }
+
+                # Persist or clear pending findings
+                if ($pendingFindings.Count -gt 0) {
+                    try {
+                        $pendingFindings.ToArray() | ConvertTo-Json -Depth 5 |
+                            Set-Content -Path $pendingFile -Encoding UTF8 -Force
+                        Write-Host ""
+                        Write-Host "  [i] $($pendingFindings.Count) finding(s) saved to pending review." -ForegroundColor DarkGray
+                        Write-Host "      Review them from the QuietMonitor menu: [3] Quarantine Manager -> [R]" -ForegroundColor DarkGray
+                    } catch {
+                        Write-Warning "  Could not save pending quarantine file: $($_.Exception.Message)"
+                    }
+                } else {
+                    if (Test-Path 'C:\QuietMonitor\Logs\pending_quarantine.json') {
+                        try { Remove-Item 'C:\QuietMonitor\Logs\pending_quarantine.json' -Force -ErrorAction SilentlyContinue } catch {}
+                    }
+                }
+            }
+
         } else {
             Write-Host "  [i] Use -AutoQuarantine flag to quarantine Red findings." -ForegroundColor Gray
             Write-Host "  [i] To quarantine manually, run:" -ForegroundColor Gray
