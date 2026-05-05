@@ -152,9 +152,7 @@ function Test-AntiDebug {
     if ($detected.Count -gt 0) {
         $msg = "Debugger detected: $($detected -join '; ')"
         script:Write-RPTamper $msg $AuditLog
-        $findings.Add((script:New-RPFinding 'Red' 'DebuggerDetected'
-            'Debugger attached to QuietMonitor process'
-            $msg 'T1622' 'Debugger Evasion'))
+        $findings.Add((script:New-RPFinding 'Red' 'DebuggerDetected' 'Debugger attached to QuietMonitor process' $msg 'T1622' 'Debugger Evasion'))
     }
 
     return $findings.ToArray()
@@ -230,9 +228,7 @@ function Test-SandboxVM {
 
     if ($indicators.Count -gt 0) {
         $msg = "VM/Sandbox indicators detected ($($indicators.Count)): $($indicators[0])"
-        $findings.Add((script:New-RPFinding 'Yellow' 'VMSandboxDetected'
-            "VM or sandbox environment detected ($($indicators.Count) indicator(s))"
-            ($indicators -join ' | ') 'T1497' 'Virtualization/Sandbox Evasion'))
+        $findings.Add((script:New-RPFinding 'Yellow' 'VMSandboxDetected' "VM or sandbox environment detected ($($indicators.Count) indicator(s))" ($indicators -join ' | ') 'T1497' 'Virtualization/Sandbox Evasion'))
         if ($AuditLog) { Add-Content -LiteralPath $AuditLog -Value "[$(Get-Date -Format 'o')] [RuntimeProtect] [ACTION: SandboxCheck] [DETAILS: $msg]" -Encoding UTF8 -ErrorAction SilentlyContinue }
     }
 
@@ -279,18 +275,14 @@ function Test-ProcessHandleAccess {
             foreach ($t in $runningAttackTools) {
                 $msg = "Memory access tool running: $($t.Name) (PID: $($t.Id)) — may be inspecting QuietMonitor process"
                 script:Write-RPTamper $msg $AuditLog
-                $findings.Add((script:New-RPFinding 'Red' 'HandleAccessTool'
-                    "Memory/debug tool detected: $($t.Name)"
-                    $msg 'T1622' 'Debugger Evasion'))
+                $findings.Add((script:New-RPFinding 'Red' 'HandleAccessTool' "Memory/debug tool detected: $($t.Name)" $msg 'T1622' 'Debugger Evasion'))
             }
         }
 
         if ($AuditLog) { Add-Content -LiteralPath $AuditLog -Value "[$(Get-Date -Format 'o')] [RuntimeProtect] [ACTION: HandleCheck] [DETAILS: Checked $($allProcs.Count) processes for known access tools]" -Encoding UTF8 -ErrorAction SilentlyContinue }
 
     } catch {
-        $findings.Add((script:New-RPFinding 'Yellow' 'HandleCheckFailed'
-            'Handle access check unavailable'
-            "Could not perform full handle table check: $_" 'T1622' 'Debugger Evasion'))
+        $findings.Add((script:New-RPFinding 'Yellow' 'HandleCheckFailed' 'Handle access check unavailable' "Could not perform full handle table check: $_" 'T1622' 'Debugger Evasion'))
     }
 
     return $findings.ToArray()
@@ -324,18 +316,13 @@ function Test-APIHookIndicators {
                 if ($name -like "*$h*") {
                     $msg = "Potential hooking DLL in process: $($mod.ModuleName) from $path"
                     script:Write-RPTamper $msg $AuditLog
-                    $findings.Add((script:New-RPFinding 'Red' 'HookingDLLLoaded'
-                        "Hooking framework DLL loaded: $($mod.ModuleName)"
-                        $msg 'T1055' 'Process Injection'))
+                    $findings.Add((script:New-RPFinding 'Red' 'HookingDLLLoaded' "Hooking framework DLL loaded: $($mod.ModuleName)" $msg 'T1055' 'Process Injection'))
                 }
             }
 
             # Flag DLLs loaded from temp/user directories
             if ($path -match '(?i)(\\Temp\\|\\AppData\\Local\\Temp\\|\\Downloads\\|\\Desktop\\)') {
-                $findings.Add((script:New-RPFinding 'Yellow' 'DLLFromTempPath'
-                    "DLL loaded from suspicious path: $($mod.ModuleName)"
-                    "DLL path: $path — may indicate injection from temp directory"
-                    'T1055' 'Process Injection'))
+                $findings.Add((script:New-RPFinding 'Yellow' 'DLLFromTempPath' "DLL loaded from suspicious path: $($mod.ModuleName)" "DLL path: $path — may indicate injection from temp directory" 'T1055' 'Process Injection'))
             }
         }
     } catch {

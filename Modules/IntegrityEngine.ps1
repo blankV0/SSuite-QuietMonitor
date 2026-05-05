@@ -180,9 +180,7 @@ function Test-IntegrityManifest {
     # ── Step 0: Manifest file present? ──────────────────────────
     if (-not (Test-Path $script:IE_MANIFEST_FILE)) {
         script:Invoke-IETamper 'Integrity manifest MISSING — possible wipe/tamper attempt.' $AuditLog
-        $findings.Add((script:New-IEFinding 'Red' 'IntegrityViolation' 'ManifestMissing'
-            'Integrity manifest file missing' $script:IE_MANIFEST_FILE '' 'manifest.json absent — possible wipe attempt'
-            'T1562' 'Impair Defenses'))
+        $findings.Add((script:New-IEFinding 'Red' 'IntegrityViolation' 'ManifestMissing' 'Integrity manifest file missing' $script:IE_MANIFEST_FILE '' 'manifest.json absent — possible wipe attempt' 'T1562' 'Impair Defenses'))
         return $findings.ToArray()
     }
 
@@ -192,25 +190,17 @@ function Test-IntegrityManifest {
         $diskHash = script:Get-IEFileHash $script:IE_MANIFEST_FILE
         if ($regHash -ne $diskHash) {
             script:Invoke-IETamper "Manifest hash MISMATCH: registry=$($regHash.Substring(0,16))... disk=$($diskHash.Substring(0,16))..." $AuditLog
-            $findings.Add((script:New-IEFinding 'Red' 'IntegrityViolation' 'ManifestRegistryMismatch'
-                'Integrity manifest modified (registry anchor mismatch)'
-                $script:IE_MANIFEST_FILE $diskHash "Registry anchor: $($regHash.Substring(0,32))... Disk: $($diskHash.Substring(0,32))..."
-                'T1562' 'Impair Defenses'))
+            $findings.Add((script:New-IEFinding 'Red' 'IntegrityViolation' 'ManifestRegistryMismatch' 'Integrity manifest modified (registry anchor mismatch)' $script:IE_MANIFEST_FILE $diskHash "Registry anchor: $($regHash.Substring(0,32))... Disk: $($diskHash.Substring(0,32))..." 'T1562' 'Impair Defenses'))
             return $findings.ToArray()  # Don't trust the manifest contents
         }
     } catch {
-        $findings.Add((script:New-IEFinding 'Yellow' 'IntegrityWarning' 'ManifestNoRegistryBackup'
-            'No registry backup for manifest hash — run Initialize-IntegrityManifest'
-            $script:IE_REG_PATH '' 'Registry key missing; secondary verification unavailable'
-            'T1562' 'Impair Defenses'))
+        $findings.Add((script:New-IEFinding 'Yellow' 'IntegrityWarning' 'ManifestNoRegistryBackup' 'No registry backup for manifest hash — run Initialize-IntegrityManifest' $script:IE_REG_PATH '' 'Registry key missing; secondary verification unavailable' 'T1562' 'Impair Defenses'))
     }
 
     # ── Step 2: HMAC verification ────────────────────────────────
     $key = script:Get-IEIntegrityKey
     if (-not $key) {
-        $findings.Add((script:New-IEFinding 'Yellow' 'IntegrityWarning' 'IntegrityKeyMissing'
-            'Integrity HMAC key not found in registry' $script:IE_REG_PATH '' 'Run Initialize-IntegrityKey + Initialize-IntegrityManifest'
-            'T1562' 'Impair Defenses'))
+        $findings.Add((script:New-IEFinding 'Yellow' 'IntegrityWarning' 'IntegrityKeyMissing' 'Integrity HMAC key not found in registry' $script:IE_REG_PATH '' 'Run Initialize-IntegrityKey + Initialize-IntegrityManifest' 'T1562' 'Impair Defenses'))
         return $findings.ToArray()
     }
 
@@ -228,10 +218,7 @@ function Test-IntegrityManifest {
 
         if ($computed -ne $storedHMAC) {
             script:Invoke-IETamper 'Manifest HMAC invalid — manifest.json has been tampered!' $AuditLog
-            $findings.Add((script:New-IEFinding 'Red' 'IntegrityViolation' 'ManifestHMACInvalid'
-                'Integrity manifest HMAC invalid — tampered'
-                $script:IE_MANIFEST_FILE $storedHMAC 'Computed HMAC does not match stored value'
-                'T1562' 'Impair Defenses'))
+            $findings.Add((script:New-IEFinding 'Red' 'IntegrityViolation' 'ManifestHMACInvalid' 'Integrity manifest HMAC invalid — tampered' $script:IE_MANIFEST_FILE $storedHMAC 'Computed HMAC does not match stored value' 'T1562' 'Impair Defenses'))
             [Array]::Clear($key, 0, $key.Length)
             return $findings.ToArray()
         }
@@ -243,16 +230,10 @@ function Test-IntegrityManifest {
             $currentHash = script:Get-IEFileHash $f.path
             if ($currentHash -eq 'ERROR') {
                 script:Invoke-IETamper "File DELETED from manifest: $($f.path)" $AuditLog
-                $findings.Add((script:New-IEFinding 'Red' 'IntegrityViolation' 'FileMissing'
-                    "Monitored file deleted: $(Split-Path $f.path -Leaf)"
-                    $f.path $f.hash "File was present at manifest creation but is now missing"
-                    'T1070' 'Indicator Removal'))
+                $findings.Add((script:New-IEFinding 'Red' 'IntegrityViolation' 'FileMissing' "Monitored file deleted: $(Split-Path $f.path -Leaf)" $f.path $f.hash "File was present at manifest creation but is now missing" 'T1070' 'Indicator Removal'))
             } elseif ($currentHash -ne $f.hash) {
                 script:Invoke-IETamper "File MODIFIED: $($f.path)" $AuditLog
-                $findings.Add((script:New-IEFinding 'Red' 'IntegrityViolation' 'FileModified'
-                    "Monitored file modified: $(Split-Path $f.path -Leaf)"
-                    $f.path $currentHash "Baseline: $($f.hash.Substring(0,32))... Current: $($currentHash.Substring(0,32))..."
-                    'T1562' 'Impair Defenses'))
+                $findings.Add((script:New-IEFinding 'Red' 'IntegrityViolation' 'FileModified' "Monitored file modified: $(Split-Path $f.path -Leaf)" $f.path $currentHash "Baseline: $($f.hash.Substring(0,32))... Current: $($currentHash.Substring(0,32))..." 'T1562' 'Impair Defenses'))
             }
         }
 
@@ -261,10 +242,7 @@ function Test-IntegrityManifest {
                         Where-Object { $_.FullName -notlike '*\integrity\*' }
         foreach ($f in $currentFiles) {
             if (-not $listedPaths.Contains($f.FullName)) {
-                $findings.Add((script:New-IEFinding 'Yellow' 'IntegrityWarning' 'UnlistedFile'
-                    "New unlisted file: $(Split-Path $f.FullName -Leaf)"
-                    $f.FullName (script:Get-IEFileHash $f.FullName) 'File was not present at manifest creation'
-                    'T1562' 'Impair Defenses'))
+                $findings.Add((script:New-IEFinding 'Yellow' 'IntegrityWarning' 'UnlistedFile' "New unlisted file: $(Split-Path $f.FullName -Leaf)" $f.FullName (script:Get-IEFileHash $f.FullName) 'File was not present at manifest creation' 'T1562' 'Impair Defenses'))
             }
         }
 
@@ -316,19 +294,13 @@ function Test-System32BinaryIntegrity {
     foreach ($bin in $script:IE_HIGHVALUE_BINS) {
         $path = Join-Path $sys32 $bin
         if (-not (Test-Path $path)) {
-            $findings.Add((script:New-IEFinding 'Red' 'SystemBinaryIntegrity' "HighValueMissing_$bin"
-                "HIGH-VALUE SYSTEM BINARY MISSING: $bin" $path ''
-                "Critical system binary absent from System32 — possible rootkit"
-                'T1014' 'Rootkit'))
+            $findings.Add((script:New-IEFinding 'Red' 'SystemBinaryIntegrity' "HighValueMissing_$bin" "HIGH-VALUE SYSTEM BINARY MISSING: $bin" $path '' "Critical system binary absent from System32 — possible rootkit" 'T1014' 'Rootkit'))
             continue
         }
         $current = script:Get-IEFileHash $path
         if ($baseDict.ContainsKey($bin) -and $current -ne $baseDict[$bin]) {
             script:Invoke-IETamper "SYSTEM BINARY MODIFIED: $bin — possible binary patching/rootkit" $AuditLog
-            $findings.Add((script:New-IEFinding 'Red' 'SystemBinaryIntegrity' "HighValueModified_$bin"
-                "CRITICAL: System binary modified — $bin"
-                $path $current "Baseline: $($baseDict[$bin].Substring(0,32))... Current: $($current.Substring(0,32))... — Possible rootkit/binary patching"
-                'T1014' 'Rootkit'))
+            $findings.Add((script:New-IEFinding 'Red' 'SystemBinaryIntegrity' "HighValueModified_$bin" "CRITICAL: System binary modified — $bin" $path $current "Baseline: $($baseDict[$bin].Substring(0,32))... Current: $($current.Substring(0,32))... — Possible rootkit/binary patching" 'T1014' 'Rootkit'))
         }
     }
 
@@ -342,10 +314,7 @@ function Test-System32BinaryIntegrity {
         $current = script:Get-IEFileHash $b.FullName
         if ($current -ne $baseDict[$b.Name]) {
             script:Invoke-IETamper "SYSTEM BINARY MODIFIED: $($b.Name)" $AuditLog
-            $findings.Add((script:New-IEFinding 'Red' 'SystemBinaryIntegrity' "BinaryModified_$($b.Name)"
-                "System binary modified: $($b.Name)"
-                $b.FullName $current "Baseline: $($baseDict[$b.Name].Substring(0,32))... Current: $($current.Substring(0,32))..."
-                'T1014' 'Rootkit'))
+            $findings.Add((script:New-IEFinding 'Red' 'SystemBinaryIntegrity' "BinaryModified_$($b.Name)" "System binary modified: $($b.Name)" $b.FullName $current "Baseline: $($baseDict[$b.Name].Substring(0,32))... Current: $($current.Substring(0,32))..." 'T1014' 'Rootkit'))
         }
     }
 
@@ -394,10 +363,7 @@ function Test-ProcessAuthenticodeSignatures {
             $isSystem = $binPath -like "$env:SystemRoot\*" -or $binPath -like "$env:ProgramFiles\*"
             if ($isSystem -and $status -ne 'NotSigned') { $sev = 'Red' }
 
-            $findings.Add((script:New-IEFinding $sev 'AuthenticodeViolation' "Authenticode_$status"
-                "$status — $($_.Name) ($($_.Id))"
-                $binPath (script:Get-IEFileHash $binPath) "$desc  Publisher: $(if ($sig.SignerCertificate) { $sig.SignerCertificate.Subject } else { '' })"
-                'T1036' 'Masquerading'))
+            $findings.Add((script:New-IEFinding $sev 'AuthenticodeViolation' "Authenticode_$status" "$status — $($_.Name) ($($_.Id))" $binPath (script:Get-IEFileHash $binPath) "$desc  Publisher: $(if ($sig.SignerCertificate) { $sig.SignerCertificate.Subject } else { '' })" 'T1036' 'Masquerading'))
         }
     }
 

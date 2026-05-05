@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     ServiceQuarantine.ps1 - Interactive quarantine workflow for suspicious services and processes.
 .DESCRIPTION

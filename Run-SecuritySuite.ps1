@@ -191,6 +191,7 @@ Write-Host "  Audit log: $AuditLog" -ForegroundColor Gray
 Write-Host ""
 
 Write-AuditLog -Action 'SuiteStart' -Details "Mode=$modeLabel Host=$env:COMPUTERNAME"
+$suiteStartTime = Get-Date
 #endregion
 
 #region -- Detection phase ----------------------------------------------------
@@ -583,4 +584,66 @@ Write-Host "-----------------------------------------------------" -ForegroundCo
 Write-Host ""
 
 Write-AuditLog -Action 'SuiteComplete' -Details "RED=$redTotal YELLOW=$yellowTotal GREEN=$greenTotal TOTAL=$($allFindings.Count)"
+#endregion
+
+#region -- JSON export for WebUI ----------------------------------------------
+$scanEndTime     = Get-Date
+$scanDurationSec = [int]($scanEndTime - $suiteStartTime).TotalSeconds
+$latestScanPath  = Join-Path $ReportPath 'latest_scan.json'
+$scanHistoryPath = Join-Path $ReportPath 'scan_history.json'
+
+$latestScan = [PSCustomObject]@{
+    timestamp     = $scanEndTime.ToString('yyyy-MM-ddTHH:mm:ss')
+    riskScore     = $riskScore
+    riskLevel     = $riskInfo.Level
+    scanDuration  = $scanDurationSec
+    serviceStatus = 'RUNNING'
+    summary       = [PSCustomObject]@{
+        red    = $redTotal
+        yellow = $yellowTotal
+        green  = $greenTotal
+        total  = $allFindings.Count
+    }
+    findings = @($allFindings | ForEach-Object {
+        [PSCustomObject]@{
+            severity    = $_.Severity
+            module      = $_.Module
+            category    = $_.Category
+            title       = $_.Title
+            detail      = $_.Detail
+            path        = $_.Path
+            mitreId     = $_.MitreId
+            mitreName   = $_.MitreName
+            actionTaken = $_.ActionTaken
+        }
+    })
+}
+
+try {
+    $latestScan | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $latestScanPath -Encoding UTF8
+    Write-Host "  [+] JSON export   : $latestScanPath" -ForegroundColor Cyan
+} catch {
+    Write-Warning "  JSON export failed: $($_.Exception.Message)"
+}
+
+$historySummary = [PSCustomObject]@{
+    timestamp = $latestScan.timestamp
+    riskScore = $riskScore
+    red       = $redTotal
+    yellow    = $yellowTotal
+    green     = $greenTotal
+}
+try {
+    $history = @()
+    if (Test-Path $scanHistoryPath) {
+        $history = @(Get-Content $scanHistoryPath -Raw | ConvertFrom-Json)
+    }
+    $history += $historySummary
+    if ($history.Count -gt 30) { $history = $history[-30..-1] }
+    $history | ConvertTo-Json -Depth 3 | Set-Content -LiteralPath $scanHistoryPath -Encoding UTF8
+    Write-Host "  [+] Scan history  : $scanHistoryPath" -ForegroundColor Cyan
+} catch {
+    Write-Warning "  Scan history update failed: $($_.Exception.Message)"
+}
+Write-AuditLog -Action 'JSONExport' -Details "latest_scan.json written. History entries: $($history.Count)"
 #endregion

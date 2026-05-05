@@ -59,17 +59,14 @@ function Test-ServiceProcessIntegrity {
         Also verifies the service is running from the expected installation path.
     #>
     [CmdletBinding()]
-    param([string]$AuditLog = 'C:\QuietMonitor\Logs\audit.log'])
+    param([string]$AuditLog = 'C:\QuietMonitor\Logs\audit.log')
 
     $findings = [System.Collections.Generic.List[PSCustomObject]]::new()
 
     try {
         $svc = Get-Service -Name $script:PI_SVC_NAME -ErrorAction SilentlyContinue
         if (-not $svc) {
-            $findings.Add((script:New-PIFinding 'Yellow' 'ServiceNotFound'
-                'QuietMonitor service not installed'
-                '' '' 'Service may have been removed or not yet installed'
-                'T1562' 'Impair Defenses'))
+            $findings.Add((script:New-PIFinding 'Yellow' 'ServiceNotFound' 'QuietMonitor service not installed' '' '' 'Service may have been removed or not yet installed' 'T1562' 'Impair Defenses'))
             return $findings.ToArray()
         }
 
@@ -78,21 +75,14 @@ function Test-ServiceProcessIntegrity {
         $binPath = (if ($svcWmi) { $svcWmi.PathName } else { '' }) -replace '"','' -replace ' -.*',''  # strip args
 
         if (-not $binPath -or -not (Test-Path $binPath)) {
-            $findings.Add((script:New-PIFinding 'Red' 'ServiceBinaryMissing'
-                'QuietMonitor service binary not found'
-                $binPath '' 'Service binary path is invalid or file missing'
-                'T1574' 'Hijack Execution Flow'))
+            $findings.Add((script:New-PIFinding 'Red' 'ServiceBinaryMissing' 'QuietMonitor service binary not found' $binPath '' 'Service binary path is invalid or file missing' 'T1574' 'Hijack Execution Flow'))
             return $findings.ToArray()
         }
 
         # Verify binary is under QuietMonitor base directory
         if (-not $binPath.StartsWith($script:PI_BASE, [System.StringComparison]::OrdinalIgnoreCase)) {
             script:Write-PITamper "Service binary path OUTSIDE QuietMonitor directory: $binPath" $AuditLog
-            $findings.Add((script:New-PIFinding 'Red' 'ServiceBinaryRelocation'
-                'Service binary outside expected directory'
-                $binPath (script:Get-PIFileHash $binPath)
-                "Expected under $script:PI_BASE but found at: $binPath"
-                'T1574' 'Hijack Execution Flow'))
+            $findings.Add((script:New-PIFinding 'Red' 'ServiceBinaryRelocation' 'Service binary outside expected directory' $binPath (script:Get-PIFileHash $binPath) "Expected under $script:PI_BASE but found at: $binPath" 'T1574' 'Hijack Execution Flow'))
         }
 
         # Compare against integrity manifest if available
@@ -105,20 +95,14 @@ function Test-ServiceProcessIntegrity {
                     $currentHash = script:Get-PIFileHash $binPath
                     if ($currentHash -ne $manifestEntry.hash) {
                         script:Write-PITamper "Service binary MODIFIED: $binPath" $AuditLog
-                        $findings.Add((script:New-PIFinding 'Red' 'ServiceBinaryModified'
-                            'Service binary hash changed since installation'
-                            $binPath $currentHash
-                            "Manifest: $($manifestEntry.hash.Substring(0,32))... Current: $($currentHash.Substring(0,32))..."
-                            'T1574' 'Hijack Execution Flow'))
+                        $findings.Add((script:New-PIFinding 'Red' 'ServiceBinaryModified' 'Service binary hash changed since installation' $binPath $currentHash "Manifest: $($manifestEntry.hash.Substring(0,32))... Current: $($currentHash.Substring(0,32))..." 'T1574' 'Hijack Execution Flow'))
                     }
                 }
             } catch {}
         }
 
     } catch {
-        $findings.Add((script:New-PIFinding 'Yellow' 'ServiceCheckFailed'
-            'Could not verify service process integrity'
-            '' '' $_.Exception.Message 'T1562' 'Impair Defenses'))
+        $findings.Add((script:New-PIFinding 'Yellow' 'ServiceCheckFailed' 'Could not verify service process integrity' '' '' $_.Exception.Message 'T1562' 'Impair Defenses'))
     }
 
     return $findings.ToArray()
@@ -134,7 +118,7 @@ function Test-DLLInjectionInProcess {
         Also flags unsigned DLLs loaded from non-system paths.
     #>
     [CmdletBinding()]
-    param([string]$AuditLog = 'C:\QuietMonitor\Logs\audit.log'])
+    param([string]$AuditLog = 'C:\QuietMonitor\Logs\audit.log')
 
     $findings = [System.Collections.Generic.List[PSCustomObject]]::new()
 
@@ -167,19 +151,13 @@ function Test-DLLInjectionInProcess {
         foreach ($u in $unexpected) {
             $sev = if ($u.Path -match '(?i)(\\Temp\\|AppData\\Local\\Temp|\\Downloads\\)') { 'Red' } else { 'Yellow' }
             if ($sev -eq 'Red') { script:Write-PITamper "Possible DLL injection: $($u.Path)" $AuditLog }
-            $findings.Add((script:New-PIFinding $sev 'UnexpectedDLL'
-                "Unexpected DLL in process: $($u.Name)"
-                $u.Path (script:Get-PIFileHash $u.Path)
-                "$($u.Reason). Path: $($u.Path)"
-                'T1055' 'Process Injection'))
+            $findings.Add((script:New-PIFinding $sev 'UnexpectedDLL' "Unexpected DLL in process: $($u.Name)" $u.Path (script:Get-PIFileHash $u.Path) "$($u.Reason). Path: $($u.Path)" 'T1055' 'Process Injection'))
         }
 
         if ($AuditLog) { Add-Content -LiteralPath $AuditLog -Value "[$(Get-Date -Format 'o')] [ProcessIntegrity] [ACTION: DLLCheck] [DETAILS: $($myProc.Modules.Count) modules checked; $($unexpected.Count) unexpected]" -Encoding UTF8 -ErrorAction SilentlyContinue }
 
     } catch {
-        $findings.Add((script:New-PIFinding 'Yellow' 'DLLCheckFailed'
-            'Could not enumerate process modules'
-            '' '' $_.Exception.Message 'T1055' 'Process Injection'))
+        $findings.Add((script:New-PIFinding 'Yellow' 'DLLCheckFailed' 'Could not enumerate process modules' '' '' $_.Exception.Message 'T1055' 'Process Injection'))
     }
 
     return $findings.ToArray()
@@ -194,7 +172,7 @@ function Test-ChildProcesses {
         Any other child process is flagged as potentially injected.
     #>
     [CmdletBinding()]
-    param([string]$AuditLog = 'C:\QuietMonitor\Logs\audit.log'])
+    param([string]$AuditLog = 'C:\QuietMonitor\Logs\audit.log')
 
     $findings = [System.Collections.Generic.List[PSCustomObject]]::new()
     $allowed  = @('powershell','pwsh','cmd','conhost')
@@ -208,11 +186,7 @@ function Test-ChildProcesses {
             if ($allowed -notcontains $name) {
                 $msg = "Unexpected child process: $($child.Name) (PID: $($child.ProcessId)) spawned by QuietMonitor (PID: $PID)"
                 script:Write-PITamper $msg $AuditLog
-                $findings.Add((script:New-PIFinding 'Red' 'UnexpectedChildProcess'
-                    "Unexpected child process: $($child.Name)"
-                    $child.ExecutablePath ''
-                    "$msg  CommandLine: $($child.CommandLine)"
-                    'T1055' 'Process Injection'))
+                $findings.Add((script:New-PIFinding 'Red' 'UnexpectedChildProcess' "Unexpected child process: $($child.Name)" $child.ExecutablePath '' "$msg  CommandLine: $($child.CommandLine)" 'T1055' 'Process Injection'))
             }
         }
     } catch {}

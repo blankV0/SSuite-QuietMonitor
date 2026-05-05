@@ -66,7 +66,7 @@ function Enable-QuietMonitorAuditing {
         so that all access generates Security log events.
     #>
     [CmdletBinding()]
-    param([string]$AuditLog = 'C:\QuietMonitor\Logs\audit.log'])
+    param([string]$AuditLog = 'C:\QuietMonitor\Logs\audit.log')
 
     # Enable Audit Object Access via auditpol
     try {
@@ -188,9 +188,9 @@ function Invoke-PrivilegeAbuseCheck {
         if ($_.Id -notin $runningProcs.Keys) {
             $runningProcs[$_.Id] = [PSCustomObject]@{
                 Name    = $_.Name
-                Path    = try { $_.MainModule.FileName } catch { '' }
+                Path    = $(try { $_.MainModule.FileName } catch { '' })
                 CPU     = $_.CPU
-                Parent  = try { (Get-CimInstance Win32_Process -Filter "ProcessId=$($_.Id)" -ErrorAction SilentlyContinue).ParentProcessId } catch { 0 }
+                Parent  = $(try { (Get-CimInstance Win32_Process -Filter "ProcessId=$($_.Id)" -ErrorAction SilentlyContinue).ParentProcessId } catch { 0 })
             }
         }
     }
@@ -220,11 +220,7 @@ function Invoke-PrivilegeAbuseCheck {
             $parentName = if ($parentPid -and $runningProcs.ContainsKey($parentPid)) { $runningProcs[$parentPid].Name } else { 'Unknown' }
             $cmdLine    = try { (Get-CimInstance Win32_Process -Filter "ProcessId=$($proc.Id)" -ErrorAction SilentlyContinue).CommandLine } catch { '' }
 
-            $findings.Add((script:New-PAFinding 'Red' 'RMMAccessDetected'
-                "Possible unauthorized RMM access: $($proc.Name)"
-                $binPath
-                "RMM Tool: $rmmName  Process: $($proc.Name) PID:$($proc.Id)  Parent: $parentName (PID:$parentPid)  User: $([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)  CmdLine: $cmdLine  — A remote operator with $rmmName credentials may have full control of this machine"
-                'T1219' 'Remote Access Software'))
+            $findings.Add((script:New-PAFinding 'Red' 'RMMAccessDetected' "Possible unauthorized RMM access: $($proc.Name)" $binPath "RMM Tool: $rmmName  Process: $($proc.Name) PID:$($proc.Id)  Parent: $parentName (PID:$parentPid)  User: $([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)  CmdLine: $cmdLine  — A remote operator with $rmmName credentials may have full control of this machine" 'T1219' 'Remote Access Software'))
         }
     }
 
@@ -242,17 +238,9 @@ function Invoke-PrivilegeAbuseCheck {
         if ($isRMM) {
             $msg = "RMM tool accessed QuietMonitor file: $procNameClean → $($evt.ObjectName) at $($evt.TimeCreated)"
             script:Write-PATamper $msg $AuditLog
-            $findings.Add((script:New-PAFinding 'Red' 'RMMFileAccess'
-                "RMM tool accessed security file: $(Split-Path $evt.ObjectName -Leaf)"
-                $evt.ObjectName
-                "Process: $procNameClean (PID: $($evt.ProcessId))  User: $($evt.User)  Time: $($evt.TimeCreated)  Access: $($evt.AccessMask)  — Flagged as: Possible unauthorized RMM access to security configuration"
-                'T1219' 'Remote Access Software'))
+            $findings.Add((script:New-PAFinding 'Red' 'RMMFileAccess' "RMM tool accessed security file: $(Split-Path $evt.ObjectName -Leaf)" $evt.ObjectName "Process: $procNameClean (PID: $($evt.ProcessId))  User: $($evt.User)  Time: $($evt.TimeCreated)  Access: $($evt.AccessMask)  — Flagged as: Possible unauthorized RMM access to security configuration" 'T1219' 'Remote Access Software'))
         } else {
-            $findings.Add((script:New-PAFinding 'Yellow' 'UnauthorizedFileAccess'
-                "Unexpected process accessed QuietMonitor file: $procNameClean"
-                $evt.ObjectName
-                "Process: $procNameClean (PID: $($evt.ProcessId))  User: $($evt.User)  Time: $($evt.TimeCreated)  Access: $($evt.AccessMask)"
-                'T1083' 'File and Directory Discovery'))
+            $findings.Add((script:New-PAFinding 'Yellow' 'UnauthorizedFileAccess' "Unexpected process accessed QuietMonitor file: $procNameClean" $evt.ObjectName "Process: $procNameClean (PID: $($evt.ProcessId))  User: $($evt.User)  Time: $($evt.TimeCreated)  Access: $($evt.AccessMask)" 'T1083' 'File and Directory Discovery'))
         }
     }
 
