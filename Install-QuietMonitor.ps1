@@ -46,7 +46,7 @@ $SuiteScript   = Join-Path $BaseDir 'Run-SecuritySuite.ps1'
 $NssmPath      = Join-Path $ToolsDir 'nssm.exe'
 
 $NssmZipUrl            = 'https://nssm.cc/release/nssm-2.24.zip'
-$NssmZipExpectedSha256 = '1c9984b4b71679c4e69fc7f8d4ecb9b9c0ef2c48df0a9d13fce96c93a6d8f8d5'
+$NssmZipExpectedSha256 = '727d1e42275c605e0f04aba98095c38a8e1e46def453cdffce42869428aa6743'
 $NssmZipDownloadPath   = Join-Path $env:TEMP 'nssm-2.24.zip'
 
 $ServiceHostExe = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
