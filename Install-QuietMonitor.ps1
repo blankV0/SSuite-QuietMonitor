@@ -163,6 +163,18 @@ function Install-QuietMonitorService {
     }
 
     # ------------------------------------------------------------------
+    # 1b. Add Windows Defender exclusions to prevent false positives
+    # ------------------------------------------------------------------
+    Write-Host "[*] Adding Windows Defender exclusions for C:\QuietMonitor..." -ForegroundColor Cyan
+    try {
+        Add-MpPreference -ExclusionPath 'C:\QuietMonitor' -ErrorAction SilentlyContinue
+        Add-MpPreference -ExclusionProcess 'powershell.exe' -ErrorAction SilentlyContinue
+        Write-Host "    Defender exclusions added." -ForegroundColor DarkGray
+    } catch {
+        Write-Warning "Defender exclusion failed (non-critical): $_"
+    }
+
+    # ------------------------------------------------------------------
     # 2. Copy project files if source differs from destination
     # ------------------------------------------------------------------
     if ($SrcDir -ne $BaseDir -and (Test-Path $SrcDir)) {

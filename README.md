@@ -214,6 +214,12 @@ The installer will:
 8. Create weekly report Task Scheduler entry (Monday 08:00)
 9. Initialize DPAPI integrity key in registry
 
+> **Windows Defender:** If Windows Defender blocks scripts, the installer automatically adds
+> `C:\QuietMonitor` to Defender exclusions. If blocked before install, run:
+> ```powershell
+> Add-MpPreference -ExclusionPath 'C:\QuietMonitor'
+> ```
+
 ### 4 — Configure your environment
 
 ```powershell

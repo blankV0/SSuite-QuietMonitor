@@ -109,24 +109,36 @@ function Invoke-NssmCommand {
 }
 
 function Get-NssmServiceUiStatus {
-    if (-not (Test-Path $nssmPath)) {
-        return [PSCustomObject]@{ Label = 'NOT INSTALLED'; Color = 'DarkGray' }
+    $nssmExe = "C:\QuietMonitor\Tools\nssm.exe"
+    $status  = 'NOT INSTALLED'
+
+    if (Test-Path $nssmExe) {
+        try {
+            $raw = & $nssmExe status $ServiceName 2>$null | Out-String
+            if     ($raw -match 'SERVICE_RUNNING') { $status = 'RUNNING'  }
+            elseif ($raw -match 'SERVICE_STOPPED') { $status = 'STOPPED'  }
+            elseif ($raw -match 'SERVICE_PAUSED')  { $status = 'PAUSED'   }
+            else {
+                # fallback to Get-Service when nssm output is ambiguous
+                $svc = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
+                if ($svc) { $status = $svc.Status.ToString().ToUpper() }
+            }
+        } catch {
+            $svc = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
+            if ($svc) { $status = $svc.Status.ToString().ToUpper() }
+        }
+    } else {
+        $svc = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
+        if ($svc) { $status = $svc.Status.ToString().ToUpper() }
     }
 
-    try {
-        $statusRaw = (Invoke-NssmCommand -Arguments @('status', $ServiceName) -IgnoreExitCode | Out-String).Trim().ToUpperInvariant()
-    } catch {
-        return [PSCustomObject]@{ Label = 'NOT INSTALLED'; Color = 'DarkGray' }
+    $color = switch ($status) {
+        'RUNNING'  { 'Green'    }
+        'STOPPED'  { 'Yellow'   }
+        'PAUSED'   { 'DarkYellow' }
+        default    { 'DarkGray' }
     }
-
-    if ($statusRaw -match 'SERVICE_RUNNING') {
-        return [PSCustomObject]@{ Label = 'RUNNING'; Color = 'Green' }
-    }
-    if ($statusRaw -match 'SERVICE_STOPPED') {
-        return [PSCustomObject]@{ Label = 'STOPPED'; Color = 'Yellow' }
-    }
-
-    return [PSCustomObject]@{ Label = 'NOT INSTALLED'; Color = 'DarkGray' }
+    return [PSCustomObject]@{ Label = $status; Color = $color }
 }
 
 # ============================================================
