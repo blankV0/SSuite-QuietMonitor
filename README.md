@@ -239,6 +239,29 @@ Change at minimum:
 
 ---
 
+## After updating (git pull)
+
+After every `git pull` or manual script edit, re-sign all scripts so Windows
+Defender and the `AllSigned` execution policy continue to trust them:
+
+```powershell
+# Run as Administrator from C:\QuietMonitor
+.\Tools\Resign-QuietMonitor.ps1
+```
+
+To sign the development source tree as well:
+
+```powershell
+.\Tools\Resign-QuietMonitor.ps1 -SourceDir "C:\Users\nerde\Desktop\ESTAGIO\PROJETOS"
+```
+
+> **First time only:** If no code-signing certificate exists yet, run
+> `.\Tools\Sign-QuietMonitor.ps1` instead — it creates the certificate, adds
+> it to Trusted Root CA and Trusted Publishers, and signs all scripts.
+> The installer (`.\Install-QuietMonitor.ps1 install`) does this automatically.
+
+---
+
 ## Usage
 
 ### Interactive Console

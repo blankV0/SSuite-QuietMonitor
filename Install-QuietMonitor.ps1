@@ -292,6 +292,60 @@ function Install-QuietMonitorService {
     }
 
     # ------------------------------------------------------------------
+    # 7b. Code-sign all PowerShell scripts (Defender / AllSigned trust)
+    # ------------------------------------------------------------------
+    Write-Host "[*] Signing all PowerShell scripts..." -ForegroundColor Cyan
+    try {
+        $certSubject = 'CN=QuietMonitor Security Suite'
+        $signingCert = Get-ChildItem 'Cert:\LocalMachine\My' |
+            Where-Object { $_.Subject -eq $certSubject -and $_.NotAfter -gt (Get-Date) } |
+            Sort-Object NotAfter -Descending |
+            Select-Object -First 1
+
+        $signScript = Join-Path $ToolsDir 'Sign-QuietMonitor.ps1'
+
+        if (-not $signingCert) {
+            # No cert yet — run the full sign script which creates + trusts the cert
+            if (Test-Path $signScript) {
+                Write-Host "    No certificate found — running Sign-QuietMonitor.ps1..." -ForegroundColor Yellow
+                & $signScript -SignSourceDir $SrcDir
+            } else {
+                Write-Host "[!] Sign-QuietMonitor.ps1 not found at $signScript; skipping signing." -ForegroundColor Yellow
+            }
+        } else {
+            # Cert exists — sign all scripts directly
+            $timestampUrl = 'http://timestamp.digicert.com'
+            $sigSigned = 0; $sigFailed = 0
+            Get-ChildItem -Path $BaseDir -Filter '*.ps1' -Recurse -ErrorAction SilentlyContinue |
+                ForEach-Object {
+                    try {
+                        $r = Set-AuthenticodeSignature `
+                            -FilePath $_.FullName `
+                            -Certificate $signingCert `
+                            -HashAlgorithm SHA256 `
+                            -TimestampServer $timestampUrl
+                        if ($r.Status -eq 'Valid') { $sigSigned++ }
+                        else { $sigFailed++ }
+                    } catch { $sigFailed++ }
+                }
+            Write-Host "[+] Signed: $sigSigned  Failed: $sigFailed" -ForegroundColor Green
+        }
+    } catch {
+        Write-Host "[!] Code signing failed (non-critical): $_" -ForegroundColor Yellow
+    }
+
+    # ------------------------------------------------------------------
+    # 7c. Set execution policy to AllSigned (only signed scripts run)
+    # ------------------------------------------------------------------
+    Write-Host "[*] Setting ExecutionPolicy to AllSigned (LocalMachine)..." -ForegroundColor Cyan
+    try {
+        Set-ExecutionPolicy AllSigned -Scope LocalMachine -Force -ErrorAction Stop
+        Write-Host "[+] ExecutionPolicy set to AllSigned." -ForegroundColor Green
+    } catch {
+        Write-Host "[!] Could not set ExecutionPolicy: $_" -ForegroundColor Yellow
+    }
+
+    # ------------------------------------------------------------------
     # 8. Register Weekly Report Scheduled Task (SYSTEM, Monday 08:00)
     # ------------------------------------------------------------------
     try {

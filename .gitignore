@@ -10,5 +10,8 @@ Quarantine/
 Baseline/
 Tools/nssm.exe
 
+# Code signing certificate (binary — contains public key only, but not tracked)
+Tools/QuietMonitor.cer
+
 # Git
 .git/
