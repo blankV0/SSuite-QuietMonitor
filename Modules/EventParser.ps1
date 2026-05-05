@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     EventParser.ps1 - Parses Windows Security and System event logs for threat indicators.
 .DESCRIPTION

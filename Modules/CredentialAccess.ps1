@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     CredentialAccess.ps1 - Monitors for LSASS credential access attempts.
 .DESCRIPTION

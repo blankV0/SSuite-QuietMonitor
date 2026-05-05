@@ -1,4 +1,4 @@
-#Requires -RunAsAdministrator
+﻿#Requires -RunAsAdministrator
 # =============================================================
 # RuntimeProtect.ps1 — Runtime self-protection checks
 # Anti-debug (IsDebuggerPresent + NtQueryInformationProcess),

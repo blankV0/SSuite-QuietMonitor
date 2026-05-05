@@ -1,4 +1,4 @@
-#Requires -RunAsAdministrator
+﻿#Requires -RunAsAdministrator
 # =============================================================
 # RemoteAnchor.ps1 — Installation fingerprint + remote sync
 # Fingerprint = SHA256(MachineGUID + InstallTimestamp + salt)

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     NetworkAnomaly.ps1 - Baselines network connections and alerts on new external IPs.
 .DESCRIPTION

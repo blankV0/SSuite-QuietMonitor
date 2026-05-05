@@ -1,4 +1,4 @@
-#Requires -RunAsAdministrator
+﻿#Requires -RunAsAdministrator
 # =============================================================
 # WhitelistProtection.ps1 — AES-256/HMAC-SHA256 encrypted whitelist
 # Password NEVER written to disk or registry.

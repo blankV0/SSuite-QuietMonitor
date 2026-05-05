@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     SelfProtect.ps1 - Anti-tamper self-protection for QuietMonitor Security Suite.
 .DESCRIPTION

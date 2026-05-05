@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     ServiceAudit.ps1 - Audits running Windows services against a trusted whitelist.
 .DESCRIPTION

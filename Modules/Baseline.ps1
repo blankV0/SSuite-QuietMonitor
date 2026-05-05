@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Baseline.ps1 - System baseline capture and drift detection.
 .DESCRIPTION

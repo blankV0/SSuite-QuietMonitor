@@ -1,4 +1,4 @@
-#Requires -RunAsAdministrator
+﻿#Requires -RunAsAdministrator
 # =============================================================
 # RMMDetect.ps1 — Known Remote Monitoring & Management tool detection
 # Scans processes, services, registry, scheduled tasks, installed

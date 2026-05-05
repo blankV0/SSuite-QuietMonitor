@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     IOCScanner.ps1 - Scans running process hashes against known-bad IOC lists.
 .DESCRIPTION

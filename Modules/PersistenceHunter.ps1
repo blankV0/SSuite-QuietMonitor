@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     PersistenceHunter.ps1 - Scans 20+ known Windows persistence mechanism locations.
 .DESCRIPTION

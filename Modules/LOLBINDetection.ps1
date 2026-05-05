@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     LOLBINDetection.ps1 - Detects Living-off-the-Land Binary abuse via parent-child process analysis.
 .DESCRIPTION

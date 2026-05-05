@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     UBA.ps1 - User Behavior Analytics from Windows Security event log.
 .DESCRIPTION

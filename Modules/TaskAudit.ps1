@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     TaskAudit.ps1 - Audits scheduled tasks for non-Microsoft and suspicious entries.
 .DESCRIPTION

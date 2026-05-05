@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     WeeklyReport.ps1 - Weekly security summary report with risk scoring and trend analysis.
 .DESCRIPTION

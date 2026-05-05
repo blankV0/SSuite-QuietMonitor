@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     LateralMovement.ps1 - Detects SMB lateral movement and remote service installation.
 .DESCRIPTION

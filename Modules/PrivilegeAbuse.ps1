@@ -1,4 +1,4 @@
-#Requires -RunAsAdministrator
+﻿#Requires -RunAsAdministrator
 # =============================================================
 # PrivilegeAbuse.ps1 — Filesystem-level access monitoring for
 # C:\QuietMonitor\ sensitive files. Uses Windows Security event

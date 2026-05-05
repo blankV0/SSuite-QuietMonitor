@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     RansomwareGuard.ps1 - Ransomware detection, prevention, and response capabilities.
 .DESCRIPTION

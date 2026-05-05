@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     PortScan.ps1 - Identifies unexpected inbound TCP/UDP listeners on this endpoint.
 .DESCRIPTION

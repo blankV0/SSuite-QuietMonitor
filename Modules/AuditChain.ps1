@@ -1,4 +1,4 @@
-#Requires -RunAsAdministrator
+﻿#Requires -RunAsAdministrator
 # =============================================================
 # AuditChain.ps1 — Blockchain-style chained audit log
 # Each entry contains HMAC-SHA256 of the previous entry.

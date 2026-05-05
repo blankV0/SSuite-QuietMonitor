@@ -1,4 +1,4 @@
-#Requires -RunAsAdministrator
+﻿#Requires -RunAsAdministrator
 # =============================================================
 # IntegrityEngine.ps1 — Full-system hash verification
 # Covers: QuietMonitor file manifest (HMAC-signed), registry

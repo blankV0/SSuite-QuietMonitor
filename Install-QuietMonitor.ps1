@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Install-QuietMonitor.ps1 - Installs or removes the QuietMonitor Windows Service.
 .DESCRIPTION

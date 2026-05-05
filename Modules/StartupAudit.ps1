@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     StartupAudit.ps1 - Audits registry Run keys and startup folders for persistence entries.
 .DESCRIPTION

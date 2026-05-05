@@ -1,4 +1,4 @@
-#Requires -RunAsAdministrator
+﻿#Requires -RunAsAdministrator
 # =============================================================
 # ProcessIntegrity.ps1 — QuietMonitor process self-integrity
 # Verifies: service process hash vs installed binary, expected

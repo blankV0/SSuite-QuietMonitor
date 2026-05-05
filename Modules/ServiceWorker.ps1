@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     ServiceWorker.ps1 - Background loop for the QuietMonitor Windows Service.
 .DESCRIPTION

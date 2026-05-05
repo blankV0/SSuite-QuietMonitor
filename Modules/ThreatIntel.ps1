@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     ThreatIntel.ps1 - Threat intelligence enrichment: IP reputation, hash checks, URLhaus blocklist.
 .DESCRIPTION

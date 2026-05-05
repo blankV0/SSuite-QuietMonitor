@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     ForensicCapture.ps1 - Incident Response forensic package export.
 .DESCRIPTION

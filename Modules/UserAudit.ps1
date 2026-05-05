@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     UserAudit.ps1 - Audits local users and group memberships for unauthorized privileged accounts.
 .DESCRIPTION

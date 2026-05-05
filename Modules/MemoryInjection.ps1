@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     MemoryInjection.ps1 - Detects process injection via VirtualQueryEx P/Invoke heuristic.
 .DESCRIPTION

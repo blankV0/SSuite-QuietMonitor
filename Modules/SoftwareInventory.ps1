@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     SoftwareInventory.ps1 - Exports installed software to a timestamped CSV file.
 .DESCRIPTION

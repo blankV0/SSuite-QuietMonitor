@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     VulnCheck.ps1 - Vulnerability scanning: EOL software, CVE feed matching, Windows patch age.
 .DESCRIPTION
