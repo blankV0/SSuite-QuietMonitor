@@ -338,8 +338,8 @@ function Compare-SystemBaseline {
                 ForEach-Object { $currentSW.Add([ordered]@{ Name = $_.DisplayName; Version = $_.DisplayVersion }) }
         } catch {}
     }
-    $bSWNames = @($baseline.Software | ForEach-Object { "$($_['Name'])|||$($_['Version'])" })
-    $cSWNames = @($currentSW | ForEach-Object { "$($_['Name'])|||$($_['Version'])" })
+    $bSWNames = @($baseline.Software | ForEach-Object { "$($_.Name)|||$($_.Version)" })
+    $cSWNames = @($currentSW | ForEach-Object { "$($_.Name)|||$($_.Version)" })
 
     $newSW     = @($cSWNames | Where-Object { $bSWNames -notcontains $_ })
     $removedSW = @($bSWNames | Where-Object { $cSWNames -notcontains $_ })
@@ -358,8 +358,8 @@ function Compare-SystemBaseline {
         $currentUsers = @(Get-LocalUser -ErrorAction Stop | ForEach-Object {
             [ordered]@{ Name = $_.Name; Enabled = $_.Enabled; SID = $_.SID.Value }
         })
-        $bUsers = @($baseline.Users | ForEach-Object { $_['Name'] })
-        $cUsers = @($currentUsers | ForEach-Object { $_['Name'] })
+        $bUsers = @($baseline.Users | ForEach-Object { $_.Name })
+        $cUsers = @($currentUsers | ForEach-Object { $_.Name })
 
         foreach ($u in $cUsers | Where-Object { $bUsers -notcontains $_ }) {
             $findings.Add((script:New-BaselineFinding 'Red' 'Baseline - Users' "baseline-user-new-$u" "NEW User Account: $u" '' "Local user '$u' not in baseline. Unauthorized account creation is a critical indicator." 'T1136' 'Create Account'))
@@ -372,7 +372,7 @@ function Compare-SystemBaseline {
     # ---- Admin group drift ----
     try {
         $currentAdmins = @(Get-LocalGroupMember -Group 'Administrators' -ErrorAction Stop | ForEach-Object { $_.Name })
-        $baseAdmins    = @($baseline.AdminMembers | ForEach-Object { $_['Name'] })
+        $baseAdmins    = @($baseline.AdminMembers | ForEach-Object { $_.Name })
 
         foreach ($a in $currentAdmins | Where-Object { $baseAdmins -notcontains $_ }) {
             $findings.Add((script:New-BaselineFinding 'Red' 'Baseline - Privilege' "baseline-admin-new-$a" "NEW Administrator: $a" '' "Principal '$a' added to Administrators group since baseline. High-risk unauthorized privilege escalation." 'T1078' 'Valid Accounts'))
@@ -387,11 +387,11 @@ function Compare-SystemBaseline {
         $currentPorts = @(Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue | ForEach-Object {
             [ordered]@{ Port = $_.LocalPort; Address = $_.LocalAddress; PID = $_.OwningProcess; Process = (if($procMap.ContainsKey([int]$_.OwningProcess)){$procMap[[int]$_.OwningProcess]}else{'?'}) }
         })
-        $bPorts = @($baseline.ListeningPorts | ForEach-Object { [int]$_['Port'] })
-        $cPorts = @($currentPorts | ForEach-Object { [int]$_['Port'] })
+        $bPorts = @($baseline.ListeningPorts | ForEach-Object { [int]$_.Port })
+        $cPorts = @($currentPorts | ForEach-Object { [int]$_.Port })
 
         foreach ($p in $cPorts | Where-Object { $bPorts -notcontains $_ } | Sort-Object -Unique) {
-            $entry = $currentPorts | Where-Object { [int]$_['Port'] -eq $p } | Select-Object -First 1
+            $entry = $currentPorts | Where-Object { [int]$_.Port -eq $p } | Select-Object -First 1
             $findings.Add((script:New-BaselineFinding 'Yellow' 'Baseline - Network' "baseline-port-new-$p" "NEW Listening Port: $p" '' "Port $p/$($entry.Process) not in baseline. Investigate if unexpected service or backdoor." 'T1049' 'System Network Connections Discovery'))
         }
     } catch {}
@@ -414,12 +414,12 @@ function Compare-SystemBaseline {
             } catch {}
         }
     }
-    $bStartupNames = @($baseline.StartupKeys | ForEach-Object { "$($_['Key'])|$($_['Name'])" })
-    $cStartupNames = @($cStartup | ForEach-Object { "$($_['Key'])|$($_['Name'])" })
+    $bStartupNames = @($baseline.StartupKeys | ForEach-Object { "$($_.Key)|$($_.Name)" })
+    $cStartupNames = @($cStartup | ForEach-Object { "$($_.Key)|$($_.Name)" })
 
     foreach ($k in $cStartupNames | Where-Object { $bStartupNames -notcontains $_ }) {
-        $entry = $cStartup | Where-Object { "$($_['Key'])|$($_['Name'])" -eq $k } | Select-Object -First 1
-        $findings.Add((script:New-BaselineFinding 'Red' 'Baseline - Startup' "baseline-startup-new-$k" "NEW Startup Entry: $($entry['Name'])" ($entry['Command'] -split ' ')[0] "New startup entry '$($entry['Name'])' = '$($entry['Command'])' not in baseline." 'T1547' 'Boot/Logon Autostart Execution'))
+        $entry = $cStartup | Where-Object { "$($_.Key)|$($_.Name)" -eq $k } | Select-Object -First 1
+        $findings.Add((script:New-BaselineFinding 'Red' 'Baseline - Startup' "baseline-startup-new-$k" "NEW Startup Entry: $($entry.Name)" ($entry.Command -split ' ')[0] "New startup entry '$($entry.Name)' = '$($entry.Command)' not in baseline." 'T1547' 'Boot/Logon Autostart Execution'))
     }
 
     # ---- File Hash drift (if enabled) ----

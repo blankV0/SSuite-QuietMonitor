@@ -72,8 +72,9 @@ function Get-RiskScore {
         if ($base -eq 0) { continue }
 
         $mult = 1.0
-        if ($f.MitreId -and $f.MitreId.Trim()) {
-            $tid = $f.MitreId.Trim()
+        $mitreId = if ($f.PSObject.Properties['MitreId']) { [string]$f.MitreId } else { '' }
+        if ($mitreId -and $mitreId.Trim()) {
+            $tid = $mitreId.Trim()
             if     ($mitreWeights.ContainsKey($tid))                  { $mult = $mitreWeights[$tid] }
             elseif ($tid -match '\.') {
                 $parent = $tid.Split('.')[0]

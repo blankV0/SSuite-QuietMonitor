@@ -268,7 +268,9 @@ function Invoke-RemoteAnchorSync {
         if (Test-Path $sf) { $settings = Get-Content $sf -Raw -Encoding UTF8 | ConvertFrom-Json }
     } catch {}
 
-    $endpoint = if ($settings -and $settings.selfProtect -and $settings.selfProtect.remoteAnchorEndpoint) { $settings.selfProtect.remoteAnchorEndpoint } else { $null }
+    $endpoint = if ($settings -and $settings.selfProtect -and
+        ($settings.selfProtect | Get-Member -Name 'remoteAnchorEndpoint' -ErrorAction SilentlyContinue) -and
+        $settings.selfProtect.remoteAnchorEndpoint) { $settings.selfProtect.remoteAnchorEndpoint } else { $null }
     if ($endpoint) {
         foreach ($item in (Test-InstallFingerprintRemote -RemoteEndpoint $endpoint -AuditLog $AuditLog)) { $findings.Add($item) }
     } else {

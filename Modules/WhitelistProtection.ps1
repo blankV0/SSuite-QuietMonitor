@@ -363,7 +363,9 @@ function Invoke-WhitelistIntegrityCheck {
         }
     } catch {}
 
-    $remoteUrl = if ($cfg -and $cfg.selfProtect -and $cfg.selfProtect.whitelistRemoteAnchorUrl) { $cfg.selfProtect.whitelistRemoteAnchorUrl } else { $null }
+    $remoteUrl = if ($cfg -and $cfg.selfProtect -and
+        ($cfg.selfProtect | Get-Member -Name 'whitelistRemoteAnchorUrl' -ErrorAction SilentlyContinue) -and
+        $cfg.selfProtect.whitelistRemoteAnchorUrl) { $cfg.selfProtect.whitelistRemoteAnchorUrl } else { $null }
     if ($remoteUrl) {
         $ok = Test-WhitelistRemoteIntegrity -RemoteUrl $remoteUrl -AuditLog $AuditLog
         if (-not $ok) {

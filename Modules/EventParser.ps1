@@ -208,7 +208,7 @@ function Invoke-EventParser {
         }
 
         # Green summary if nothing found
-        $flaggedCount = ($findings | Where-Object { $_.Severity -in 'Yellow','Red' }).Count
+        $flaggedCount = @($findings | Where-Object { $_.Severity -in 'Yellow','Red' }).Count
         if ($flaggedCount -eq 0) {
             $findings.Add([PSCustomObject]@{
                 Module      = 'EventParser'

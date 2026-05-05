@@ -268,6 +268,18 @@ foreach ($entry in $detectionModules.GetEnumerator()) {
 Write-Host ""
 #endregion
 
+#region -- Normalize finding schema ------------------------------------------
+# Ensure all expected properties exist on every finding so downstream code is safe
+$schemaProps = @('Severity','Module','Category','Title','Detail','Path','MitreId','MitreName','ActionTaken')
+foreach ($f in $allFindings) {
+    foreach ($prop in $schemaProps) {
+        if (-not ($f.PSObject.Properties[$prop])) {
+            Add-Member -InputObject $f -NotePropertyName $prop -NotePropertyValue '' -Force
+        }
+    }
+}
+#endregion
+
 #region -- Risk Score & Scan Summary -----------------------------------------
 $redTotal    = @($allFindings | Where-Object { $_.Severity -eq 'Red'    }).Count
 $yellowTotal = @($allFindings | Where-Object { $_.Severity -eq 'Yellow' }).Count

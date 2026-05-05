@@ -47,14 +47,15 @@ function Invoke-SoftwareInventory {
             $key = "$($app.DisplayName)|$($app.DisplayVersion)"
             if ($seen.Add($key)) {
                 $installDate = ''
-                if ($app.InstallDate) {
+                $rawDate = if ($app.PSObject.Properties['InstallDate']) { [string]$app.InstallDate } else { $null }
+                if ($rawDate) {
                     # InstallDate is typically YYYYMMDD
-                    if ($app.InstallDate -match '^\d{8}$') {
+                    if ($rawDate -match '^\d{8}$') {
                         try {
-                            $installDate = [datetime]::ParseExact($app.InstallDate, 'yyyyMMdd', $null).ToString('yyyy-MM-dd')
-                        } catch { $installDate = $app.InstallDate }
+                            $installDate = [datetime]::ParseExact($rawDate, 'yyyyMMdd', $null).ToString('yyyy-MM-dd')
+                        } catch { $installDate = $rawDate }
                     } else {
-                        $installDate = $app.InstallDate
+                        $installDate = $rawDate
                     }
                 }
 

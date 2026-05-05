@@ -168,7 +168,7 @@ function Invoke-RansomwareGuardScan {
     if ($settings -and $null -ne $settings.honeypotEnabled) { $honeypotEnabled = [bool]$settings.honeypotEnabled }
 
     if ($honeypotEnabled -and (Test-Path $honeypotPath)) {
-        $hpFiles = Get-ChildItem -Path $honeypotPath -File -ErrorAction SilentlyContinue
+        $hpFiles = @(Get-ChildItem -Path $honeypotPath -File -ErrorAction SilentlyContinue)
         if ($hpFiles.Count -gt 0) {
             $recentlyModified = @($hpFiles | Where-Object { $_.LastWriteTime -gt (Get-Date).AddHours(-24) })
             if ($recentlyModified.Count -gt 0) {

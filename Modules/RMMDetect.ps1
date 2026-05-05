@@ -378,21 +378,30 @@ function script:Get-RMMInstalledSoftware {
 function script:Get-RMMNetworkConnections {
     param([PSCustomObject]$Sig)
     $found = @()
+    # Generic ports shared by browsers, Windows Update, CDNs and cloud providers.
+    # Only count these as RMM evidence when the owning process matches a known RMM process name.
+    $genericPorts = @(80, 443, 8080, 8443, 8000, 8888)
     try {
         $conns = Get-NetTCPConnection -State Established,Listen -ErrorAction SilentlyContinue
         foreach ($port in $Sig.Ports) {
             $matches_ = $conns | Where-Object { $_.LocalPort -eq $port -or $_.RemotePort -eq $port }
             foreach ($m in $matches_) {
                 $procName = try { (Get-Process -Id $m.OwningProcess -ErrorAction SilentlyContinue).Name } catch { 'Unknown' }
-                # Only flag if remote address matches known domain IPs (basic heuristic — check domain in RemoteAddress)
+                # Skip generic web port hits unless the owning process matches a known RMM process name
+                if ($genericPorts -contains $port) {
+                    $isRMMProc = $Sig.ProcessNames | Where-Object {
+                        $procName -ilike $_ -or $procName -ilike "*$_*"
+                    }
+                    if (-not $isRMMProc) { continue }
+                }
                 $found += [PSCustomObject]@{
-                    LocalPort    = $m.LocalPort
+                    LocalPort     = $m.LocalPort
                     RemoteAddress = $m.RemoteAddress
-                    RemotePort   = $m.RemotePort
-                    State        = $m.State
-                    ProcessId    = $m.OwningProcess
-                    ProcessName  = $procName
-                    Source       = 'Network'
+                    RemotePort    = $m.RemotePort
+                    State         = $m.State
+                    ProcessId     = $m.OwningProcess
+                    ProcessName   = $procName
+                    Source        = 'Network'
                 }
             }
         }
@@ -460,15 +469,30 @@ function Invoke-RMMDetection {
         foreach ($p in $procs)   { $evidence.Add("Process: $($p.ProcessName) PID:$($p.PID)") }
         foreach ($s in $svcs)    { $evidence.Add("Service: $($s.DisplayName) [$($s.Status)]") }
         foreach ($r in $regKeys) { $evidence.Add("Registry: $($r.Key)") }
-        foreach ($so in $soft)   { $evidence.Add("Installed: $($so.DisplayName) v$($so.Version) ($(($so.InstallDate)))") }
+        foreach ($so in $soft)   { $evidence.Add("Installed: $($so.Title) v$($so.Version) ($($so.InstallDate))") }
         foreach ($n in $net)     { $evidence.Add("Network: $($n.RemoteAddress):$($n.RemotePort) via $($n.ProcessName)") }
         foreach ($e in $ext)     { $evidence.Add("BrowserExt: $($e.ExtId) at $($e.Path)") }
 
         if ($evidence.Count -eq 0) { continue }
 
+        # Count distinct independent evidence types for accurate risk classification
+        $evidenceTypes = 0
+        if ($procs.Count -gt 0)   { $evidenceTypes++ }
+        if ($svcs.Count -gt 0)    { $evidenceTypes++ }
+        if ($regKeys.Count -gt 0) { $evidenceTypes++ }
+        if ($soft.Count -gt 0)    { $evidenceTypes++ }
+        if ($net.Count -gt 0)     { $evidenceTypes++ }
+        if ($ext.Count -gt 0)     { $evidenceTypes++ }
+
         $isAuthorized = script:Test-RMMIsWhitelisted $sig.ShortName $Whitelist
         $status       = if ($isAuthorized) { 'KNOWN-AUTHORIZED' } else { 'UNKNOWN-UNAUTHORIZED' }
-        $sev          = if ($isAuthorized) { 'Green' } else { if ($sig.RiskLevel -eq 'HIGH') { 'Red' } else { 'Yellow' } }
+        # For unauthorized HIGH-risk tools: require at least 2 independent evidence types.
+        # A single network connection alone is insufficient for HIGH/RED classification.
+        if (-not $isAuthorized -and $sig.RiskLevel -eq 'HIGH' -and $evidenceTypes -lt 2) {
+            $sev = 'Yellow'   # Downgrade: insufficient corroborating evidence
+        } else {
+            $sev = if ($isAuthorized) { 'Green' } else { if ($sig.RiskLevel -eq 'HIGH') { 'Red' } else { 'Yellow' } }
+        }
 
         $evidenceStr = $evidence -join '  |  '
         $details     = "RMM DETECTED: $($sig.Name) — Status: $status  Evidence: $evidenceStr  Risk: $($sig.RiskLevel)  Access granted: $($sig.AccessDesc)"
