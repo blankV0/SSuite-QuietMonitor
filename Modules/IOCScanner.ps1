@@ -82,16 +82,22 @@ function Invoke-IOCScanner {
     }
 
     # Detect column name (MalwareBazaar uses 'sha256_hash'; simple format uses 'sha256')
-    $hashCol  = if ($csvRows[0].PSObject.Properties['sha256_hash'])   { 'sha256_hash' }
-                elseif ($csvRows[0].PSObject.Properties['sha256'])    { 'sha256' }
+    if ($null -eq $csvRows -or @($csvRows).Count -eq 0) {
+        Write-Warning 'IOCScanner: IOC CSV is empty.'
+        return $findings
+    }
+    $firstRow = @($csvRows)[0]
+
+    $hashCol  = if ($firstRow.PSObject.Properties['sha256_hash'])   { 'sha256_hash' }
+                elseif ($firstRow.PSObject.Properties['sha256'])    { 'sha256' }
                 else { $null }
 
-    $labelCol = if ($csvRows[0].PSObject.Properties['signature'])     { 'signature' }
-                elseif ($csvRows[0].PSObject.Properties['tags'])      { 'tags' }
-                elseif ($csvRows[0].PSObject.Properties['label'])     { 'label' }
+    $labelCol = if ($firstRow.PSObject.Properties['signature'])     { 'signature' }
+                elseif ($firstRow.PSObject.Properties['tags'])      { 'tags' }
+                elseif ($firstRow.PSObject.Properties['label'])     { 'label' }
                 else { $null }
 
-    $nameCol  = if ($csvRows[0].PSObject.Properties['file_name'])     { 'file_name' } else { $null }
+    $nameCol  = if ($firstRow.PSObject.Properties['file_name'])     { 'file_name' } else { $null }
 
     if (-not $hashCol) {
         Write-Warning "IOCScanner: CSV missing expected 'sha256_hash' or 'sha256' column."

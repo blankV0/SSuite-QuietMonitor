@@ -280,6 +280,8 @@ function Test-System32BinaryIntegrity {
         foreach ($b in $allBins) {
             $baseline[$b.Name] = script:Get-IEFileHash $b.FullName
         }
+        $baselineDir = Split-Path $baselineFile -Parent
+        if (-not (Test-Path $baselineDir)) { New-Item -ItemType Directory -Path $baselineDir -Force | Out-Null }
         $baseline | ConvertTo-Json | Set-Content $baselineFile -Encoding UTF8
         Write-Host "  [IntegrityEngine] System32 baseline captured: $($baseline.Count) files." -ForegroundColor Green
         return $findings.ToArray()  # First run — nothing to compare against
