@@ -1,399 +1,505 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>QuietMonitor Dashboard</title>
-  <script src="data.js"></script>
-  <style>
-    :root {
-      --bg:         #0d1117;
-      --panel:      #161b22;
-      --panel2:     #1c2128;
-      --border:     #30363d;
-      --text:       #c9d1d9;
-      --muted:      #8b949e;
-      --red:        #da3633;
-      --red-bg:     rgba(218,54,51,0.12);
-      --yellow:     #d29922;
-      --yellow-bg:  rgba(210,153,34,0.12);
-      --green:      #3fb950;
-      --green-bg:   rgba(63,185,80,0.10);
-      --blue:       #58a6ff;
-      --blue-bg:    rgba(88,166,255,0.08);
-    }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      font-size: 14px;
-      min-height: 100vh;
-    }
-
-    /* ─── Header ─── */
-    header {
-      background: var(--panel);
-      border-bottom: 1px solid var(--border);
-      padding: 20px 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-    header h1 {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--blue);
-      letter-spacing: 0.3px;
-    }
-    #status-badge {
-      padding: 5px 14px;
-      border-radius: 5px;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-    }
-
-    /* ─── Main layout ─── */
-    main { padding: 28px 32px; max-width: 1400px; }
-
-    /* ─── Score + cards row ─── */
-    .top-row {
-      display: flex;
-      gap: 20px;
-      margin-bottom: 28px;
-      flex-wrap: wrap;
-    }
-    .score-box {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 24px 36px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-width: 180px;
-    }
-    .score-box .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 6px; }
-    #risk-score {
-      font-size: 64px;
-      font-weight: 800;
-      line-height: 1;
-    }
-    #risk-level {
-      font-size: 13px;
-      font-weight: 600;
-      margin-top: 6px;
-      letter-spacing: 0.5px;
-    }
-
-    .cards {
-      display: flex;
-      gap: 16px;
-      flex: 1;
-      flex-wrap: wrap;
-    }
-    .card {
-      flex: 1;
-      min-width: 140px;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 22px 20px;
-      text-align: center;
-    }
-    .card .num { font-size: 48px; font-weight: 800; line-height: 1; }
-    .card .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-top: 6px; }
-    .card.red    { border-color: var(--red);    background: var(--red-bg); }
-    .card.yellow { border-color: var(--yellow); background: var(--yellow-bg); }
-    .card.green  { border-color: var(--green);  background: var(--green-bg); }
-    .card.blue   { border-color: var(--blue);   background: var(--blue-bg); }
-    .card.red    .num { color: var(--red); }
-    .card.yellow .num { color: var(--yellow); }
-    .card.green  .num { color: var(--green); }
-    .card.blue   .num { color: var(--blue); }
-
-    /* ─── Meta bar ─── */
-    .meta-bar {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px 20px;
-      display: flex;
-      gap: 32px;
-      flex-wrap: wrap;
-      margin-bottom: 28px;
-      font-size: 12px;
-      color: var(--muted);
-    }
-    .meta-bar span strong { color: var(--text); }
-
-    /* ─── Findings ─── */
-    .section-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text);
-      border-left: 3px solid var(--blue);
-      padding-left: 10px;
-      margin-bottom: 14px;
-    }
-    .findings-wrap {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      overflow: hidden;
-    }
-    .finding {
-      padding: 14px 20px;
-      border-bottom: 1px solid var(--border);
-      display: grid;
-      grid-template-columns: 80px 130px 1fr;
-      gap: 12px;
-      align-items: start;
-    }
-    .finding:last-child { border-bottom: none; }
-    .finding.red    { background: var(--red-bg); }
-    .finding.yellow { background: var(--yellow-bg); }
-    .finding.green  { background: var(--green-bg); }
-    .finding:hover  { filter: brightness(1.1); }
-
-    .badge {
-      display: inline-block;
-      padding: 3px 9px;
-      border-radius: 4px;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      white-space: nowrap;
-    }
-    .badge.red    { background: var(--red);    color: #fff; }
-    .badge.yellow { background: var(--yellow); color: #000; }
-    .badge.green  { background: var(--green);  color: #000; }
-
-    .finding-module {
-      font-size: 11px;
-      font-family: 'Consolas', 'Courier New', monospace;
-      color: var(--muted);
-      padding-top: 2px;
-    }
-    .finding-body {}
-    .finding-title { font-weight: 600; font-size: 13px; margin-bottom: 3px; }
-    .finding-detail { font-size: 12px; color: var(--muted); line-height: 1.5; }
-    .finding-path {
-      font-size: 11px;
-      font-family: 'Consolas', 'Courier New', monospace;
-      color: var(--muted);
-      margin-top: 4px;
-      word-break: break-all;
-    }
-    .finding-mitre {
-      font-size: 10px;
-      margin-top: 5px;
-    }
-    .finding-mitre a {
-      color: var(--blue);
-      text-decoration: none;
-    }
-    .finding-mitre a:hover { text-decoration: underline; }
-
-    .empty-state {
-      padding: 40px;
-      text-align: center;
-      color: var(--muted);
-    }
-    .empty-state .icon { font-size: 40px; margin-bottom: 10px; }
-
-    /* ─── No data screen ─── */
-    #no-data {
-      display: none;
-      padding: 80px 32px;
-      text-align: center;
-      color: var(--muted);
-    }
-    #no-data .icon { font-size: 48px; margin-bottom: 16px; }
-    #no-data p { font-size: 15px; margin-bottom: 8px; color: var(--text); }
-    #no-data code {
-      font-family: 'Consolas', monospace;
-      font-size: 12px;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      padding: 2px 8px;
-      border-radius: 4px;
-    }
-
-    footer {
-      margin-top: 40px;
-      padding: 14px 32px;
-      border-top: 1px solid var(--border);
-      color: var(--muted);
-      font-size: 11px;
-    }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>QuietMonitor v2.0</title>
+<style>
+:root{
+  --bg:#0d1117;--panel:#161b22;--panel2:#1c2128;--border:#30363d;
+  --text:#c9d1d9;--muted:#8b949e;--link:#58a6ff;
+  --red:#f85149;--red-bg:rgba(248,81,73,.13);
+  --yellow:#d29922;--yellow-bg:rgba(210,153,34,.13);
+  --green:#3fb950;--green-bg:rgba(63,185,80,.11);
+  --blue:#58a6ff;--blue-bg:rgba(88,166,255,.09);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,sans-serif;font-size:14px}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+code,pre,.mono{font-family:'Consolas','Courier New',monospace}
+#shell{display:flex;height:100vh;overflow:hidden}
+#sidebar{width:210px;min-width:210px;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+#content{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.logo{padding:18px 16px 14px;border-bottom:1px solid var(--border)}
+.logo h1{font-size:15px;font-weight:700;color:var(--blue);letter-spacing:.3px}
+.logo .ver{font-size:11px;color:var(--muted);margin-top:3px}
+.svc-pill{margin:8px 12px;padding:6px 10px;border-radius:6px;font-size:11px;display:flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--border)}
+.svc-pill .dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.svc-pill .dot.running{background:var(--green);box-shadow:0 0 6px var(--green)}
+.svc-pill .dot.stopped{background:var(--red)}
+nav{flex:1;padding:8px 0;overflow-y:auto}
+nav button{width:100%;padding:9px 16px;background:none;border:none;color:var(--muted);text-align:left;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:10px;transition:background .15s,color .15s}
+nav button:hover{background:var(--panel2);color:var(--text)}
+nav button.active{background:var(--blue-bg);color:var(--blue);font-weight:600;border-right:2px solid var(--blue)}
+nav button .icon{font-size:16px;width:20px;text-align:center}
+.sidebar-footer{padding:12px 14px;border-top:1px solid var(--border);font-size:11px;color:var(--muted)}
+#topbar{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+#topbar h2{font-size:15px;font-weight:600;flex:1}
+.btn{padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer;font-size:12px;font-family:inherit;transition:background .15s}
+.btn:hover{background:var(--border)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#0d1117;font-weight:600}
+.btn.primary:hover{opacity:.88}
+.btn.danger{background:var(--red-bg);border-color:var(--red);color:var(--red)}
+.btn.danger:hover{background:var(--red);color:#fff}
+#refresh-spin{display:inline-block}
+#refresh-spin.spin{animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.page{display:none;padding:24px}
+.page.active{display:block}
+.dash-top{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:24px}
+.gauge-wrap{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:24px;display:flex;flex-direction:column;align-items:center;min-width:180px}
+.gauge-label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px}
+.gauge-svg{position:relative;width:140px;height:100px}
+.gauge-svg svg{width:140px;height:100px}
+.gauge-val{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-size:32px;font-weight:800;line-height:1;white-space:nowrap}
+.gauge-level{font-size:12px;font-weight:600;margin-top:6px}
+.dash-cards{display:flex;gap:14px;flex:1;flex-wrap:wrap}
+.dcard{flex:1;min-width:120px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:18px 16px;text-align:center}
+.dcard .n{font-size:44px;font-weight:800;line-height:1}
+.dcard .l{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-top:6px}
+.dcard.r{border-color:var(--red);background:var(--red-bg)}.dcard.r .n{color:var(--red)}
+.dcard.y{border-color:var(--yellow);background:var(--yellow-bg)}.dcard.y .n{color:var(--yellow)}
+.dcard.g{border-color:var(--green);background:var(--green-bg)}.dcard.g .n{color:var(--green)}
+.dcard.b{border-color:var(--blue);background:var(--blue-bg)}.dcard.b .n{color:var(--blue)}
+.section-hd{font-size:13px;font-weight:600;color:var(--text);border-left:3px solid var(--blue);padding-left:10px;margin-bottom:12px}
+.sparkline-box{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:20px}
+.dash-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px}
+.dash-actions .btn{padding:10px 18px;font-size:13px}
+#status-bar{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;display:flex;gap:24px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:20px}
+#status-bar strong{color:var(--text)}
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.filter-bar input{flex:1;min-width:180px;padding:7px 12px;background:var(--panel);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;font-family:inherit}
+.filter-bar input::placeholder{color:var(--muted)}
+.filter-bar input:focus{outline:none;border-color:var(--blue)}
+.tab-btn{padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:var(--panel);color:var(--muted);cursor:pointer;font-size:12px;transition:all .15s}
+.tab-btn:hover,.tab-btn.active{background:var(--blue-bg);border-color:var(--blue);color:var(--blue)}
+.table-wrap{background:var(--panel);border:1px solid var(--border);border-radius:10px;overflow:hidden;overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead tr{background:var(--panel2)}
+th{padding:10px 12px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;font-size:12px}
+tr:last-child td{border-bottom:none}
+tr.row-r{background:var(--red-bg)}tr.row-y{background:var(--yellow-bg)}tr.row-g{background:var(--green-bg)}
+tr:hover{filter:brightness(1.08);cursor:pointer}
+.detail-row{display:none}
+.detail-row.open{display:table-row}
+.detail-row td{background:var(--panel2);padding:12px 16px;font-size:12px;color:var(--muted)}
+.badge{display:inline-block;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:.5px;white-space:nowrap}
+.badge.r{background:var(--red);color:#fff}
+.badge.y{background:var(--yellow);color:#000}
+.badge.g{background:var(--green);color:#000}
+.mono-sm{font-family:'Consolas','Courier New',monospace;font-size:11px;color:var(--muted);word-break:break-all}
+.q-item{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:10px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start}
+.q-item .q-path{font-family:'Consolas','Courier New',monospace;font-size:12px;word-break:break-all}
+.q-item .q-meta{font-size:11px;color:var(--muted);margin-top:4px}
+.q-item .q-hash{font-family:'Consolas','Courier New',monospace;font-size:10px;color:var(--muted);margin-top:3px;word-break:break-all}
+.q-actions{display:flex;gap:6px;flex-shrink:0}
+#log-container{background:var(--panel);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+#log-output{font-family:'Consolas','Courier New',monospace;font-size:11px;line-height:1.7;padding:14px 16px;height:calc(100vh - 230px);overflow-y:auto;white-space:pre-wrap;word-break:break-all}
+.log-r{color:var(--red)}.log-y{color:var(--yellow)}.log-g{color:var(--green)}.log-i{color:var(--muted)}
+.log-bar{display:flex;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);align-items:center;background:var(--panel2)}
+.log-bar input{flex:1;padding:5px 10px;background:var(--panel);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:12px;font-family:inherit}
+.log-bar input:focus{outline:none;border-color:var(--blue)}
+.hist-chart-box{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:20px}
+.chart-legend{display:flex;gap:18px;margin-top:10px;font-size:11px;color:var(--muted);flex-wrap:wrap}
+.chart-legend span{display:flex;align-items:center;gap:5px}
+.chart-legend .dot{width:10px;height:10px;border-radius:50%}
+.empty{padding:60px 20px;text-align:center;color:var(--muted)}
+.empty .ico{font-size:40px;margin-bottom:12px}
+.empty p{font-size:14px;margin-bottom:6px;color:var(--text)}
+.loading{padding:40px;text-align:center;color:var(--muted);animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+@media(max-width:600px){
+  #sidebar{width:52px;min-width:52px}
+  .logo h1,.logo .ver,.svc-pill .svc-txt,nav button span:not(.icon){display:none}
+  nav button{justify-content:center;padding:10px}
+  .page{padding:12px}
+}
+</style>
 </head>
 <body>
-
-<header>
-  <h1>&#x1F6E1; QuietMonitor Security Suite</h1>
-  <span id="status-badge">—</span>
-</header>
-
-<div id="no-data">
-  <div class="icon">&#x1F4C2;</div>
-  <p>No scan data found.</p>
-  <p>Run a scan first: <code>.\Run-SecuritySuite.ps1 -ScanOnly</code></p>
-  <p style="margin-top:8px;font-size:12px;">Then re-open this file.</p>
+<div id="shell">
+<div id="sidebar">
+  <div class="logo"><h1>&#x1F6E1; QuietMonitor</h1><div class="ver">v2.0 Security Suite</div></div>
+  <div class="svc-pill"><div class="dot" id="svc-dot"></div><span class="svc-txt" id="svc-label">Checking...</span></div>
+  <nav>
+    <button class="active" data-page="dashboard"><span class="icon">&#x1F4CA;</span><span>Dashboard</span></button>
+    <button data-page="findings"><span class="icon">&#x1F50D;</span><span>Findings</span></button>
+    <button data-page="quarantine"><span class="icon">&#x1F512;</span><span>Quarantine</span></button>
+    <button data-page="auditlog"><span class="icon">&#x1F4DC;</span><span>Audit Log</span></button>
+    <button data-page="history"><span class="icon">&#x1F4C8;</span><span>Scan History</span></button>
+  </nav>
+  <div class="sidebar-footer"><div>Auto-refresh: 30s</div><div id="sidebar-lastscan" style="margin-top:3px">—</div></div>
 </div>
+<div id="content">
+  <div id="topbar">
+    <h2 id="page-title">Dashboard</h2>
+    <span id="auto-countdown" style="font-size:11px;color:var(--muted)">Refresh in 30s</span>
+    <button class="btn" id="refresh-btn"><span id="refresh-spin">&#x21BB;</span> Refresh</button>
+  </div>
 
-<main id="main" style="display:none">
-
-  <!-- Score + Cards -->
-  <div class="top-row">
-    <div class="score-box">
-      <div class="label">Risk Score</div>
-      <div id="risk-score">—</div>
-      <div id="risk-level">—</div>
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div id="no-data-msg" class="empty" style="display:none">
+      <div class="ico">&#x1F4C2;</div><p>No scan data found.</p><p style="font-size:12px">Run: <code>.\Run-SecuritySuite.ps1 -ScanOnly</code></p>
     </div>
-    <div class="cards">
-      <div class="card red">
-        <div class="num" id="cnt-red">0</div>
-        <div class="lbl">&#x2716; Threats</div>
+    <div id="dash-content">
+      <div id="status-bar">
+        <span>&#x1F4BB; Host: <strong id="sb-host">—</strong></span>
+        <span>&#x1F552; Last Scan: <strong id="sb-time">—</strong></span>
+        <span>&#x23F1; Duration: <strong id="sb-dur">—</strong></span>
+        <span>&#x2699; Service: <strong id="sb-svc">—</strong></span>
       </div>
-      <div class="card yellow">
-        <div class="num" id="cnt-yellow">0</div>
-        <div class="lbl">&#x26A0; Suspicious</div>
+      <div class="dash-top">
+        <div class="gauge-wrap">
+          <div class="gauge-label">Risk Score</div>
+          <div class="gauge-svg">
+            <svg viewBox="0 0 140 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M14 90 A62 62 0 0 1 126 90" stroke="#30363d" stroke-width="12" fill="none" stroke-linecap="round"/>
+              <path id="gauge-arc" d="M14 90 A62 62 0 0 1 126 90" stroke="#3fb950" stroke-width="12" fill="none" stroke-linecap="round" stroke-dasharray="0 195"/>
+            </svg>
+            <div class="gauge-val" id="gauge-val">—</div>
+          </div>
+          <div class="gauge-level" id="gauge-level">—</div>
+        </div>
+        <div class="dash-cards">
+          <div class="dcard r"><div class="n" id="d-red">0</div><div class="l">&#x2716; Threats</div></div>
+          <div class="dcard y"><div class="n" id="d-yellow">0</div><div class="l">&#x26A0; Suspicious</div></div>
+          <div class="dcard g"><div class="n" id="d-green">0</div><div class="l">&#x2714; Clean</div></div>
+          <div class="dcard b"><div class="n" id="d-total">0</div><div class="l">Total</div></div>
+        </div>
       </div>
-      <div class="card green">
-        <div class="num" id="cnt-green">0</div>
-        <div class="lbl">&#x2714; Clean</div>
+      <div class="section-hd">Risk Trend (last 30 scans)</div>
+      <div class="sparkline-box">
+        <canvas id="sparkline" height="60" style="display:block;width:100%"></canvas>
       </div>
-      <div class="card blue">
-        <div class="num" id="cnt-total">0</div>
-        <div class="lbl">Total Findings</div>
+      <div class="section-hd">Quick Actions</div>
+      <div class="dash-actions">
+        <button class="btn primary" id="run-scan-btn" onclick="triggerScan()">&#x25B6; Run Scan</button>
+        <button class="btn" onclick="navTo('findings')">&#x1F50D; View Findings</button>
+        <button class="btn" onclick="navTo('quarantine')">&#x1F512; Quarantine</button>
+        <button class="btn" onclick="navTo('auditlog')">&#x1F4DC; Audit Log</button>
       </div>
     </div>
   </div>
 
-  <!-- Meta -->
-  <div class="meta-bar">
-    <span>&#x1F4BB; <strong id="meta-host">—</strong></span>
-    <span>&#x1F552; <strong id="meta-time">—</strong></span>
-    <span>&#x23F1; <strong id="meta-dur">—</strong></span>
-    <span>&#x2699; Service: <strong id="meta-svc">—</strong></span>
+  <!-- FINDINGS -->
+  <div class="page" id="page-findings">
+    <div class="filter-bar">
+      <input id="find-search" type="text" placeholder="Search findings..." oninput="renderFindings()"/>
+      <button class="tab-btn active" onclick="setSevFilter(this,'All')">All</button>
+      <button class="tab-btn" onclick="setSevFilter(this,'Red')">&#x2716; Red</button>
+      <button class="tab-btn" onclick="setSevFilter(this,'Yellow')">&#x26A0; Yellow</button>
+      <button class="tab-btn" onclick="setSevFilter(this,'Green')">&#x2714; Green</button>
+    </div>
+    <div class="table-wrap" id="findings-table-wrap"><div class="loading">Loading findings...</div></div>
   </div>
 
-  <!-- Findings -->
-  <div class="section-title">Findings</div>
-  <div class="findings-wrap" id="findings-list">
-    <div class="empty-state"><div class="icon">&#x2705;</div>No findings to display.</div>
+  <!-- QUARANTINE -->
+  <div class="page" id="page-quarantine">
+    <div id="quar-list"><div class="loading">Loading quarantine...</div></div>
   </div>
 
-</main>
+  <!-- AUDIT LOG -->
+  <div class="page" id="page-auditlog">
+    <div id="log-container">
+      <div class="log-bar">
+        <input id="log-search" type="text" placeholder="Filter log..." oninput="filterLog()"/>
+        <button class="btn" onclick="loadLog()">&#x21BB; Reload</button>
+        <button class="btn" onclick="document.getElementById('log-output').scrollTop=document.getElementById('log-output').scrollHeight">&#x2193; Bottom</button>
+      </div>
+      <div id="log-output"><span class="loading">Loading...</span></div>
+    </div>
+  </div>
 
-<footer>
-  QuietMonitor Security Suite &bull; Dashboard &bull;
-  Data source: <code>C:\QuietMonitor\WebUI\data.js</code>
-</footer>
+  <!-- HISTORY -->
+  <div class="page" id="page-history">
+    <div class="section-hd">Risk Score Over Time</div>
+    <div class="hist-chart-box">
+      <canvas id="hist-chart" height="180" style="display:block;width:100%"></canvas>
+      <div class="chart-legend">
+        <span><span class="dot" style="background:var(--blue)"></span>Risk Score</span>
+        <span><span class="dot" style="background:var(--red)"></span>Red Findings</span>
+        <span><span class="dot" style="background:var(--yellow)"></span>Yellow Findings</span>
+      </div>
+    </div>
+    <div class="section-hd">Scan History</div>
+    <div class="table-wrap" id="hist-table-wrap"><div class="loading">Loading history...</div></div>
+  </div>
 
+</div>
+</div>
 <script>
-(function () {
-  var data = window.SCAN_DATA;
+'use strict';
+var API='http://localhost:8080/api';
+var REFRESH=30;
+var state={scan:null,history:[],quarantine:[],logLines:[],sevFilter:'All',countdown:REFRESH};
 
-  if (!data) {
-    document.getElementById('no-data').style.display = 'block';
-    return;
-  }
+var PAGE_TITLES={dashboard:'Dashboard',findings:'Findings',quarantine:'Quarantine Manager',auditlog:'Audit Log',history:'Scan History'};
 
-  document.getElementById('main').style.display = 'block';
+function navTo(id){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
+  document.querySelectorAll('nav button').forEach(function(b){b.classList.remove('active')});
+  var pg=document.getElementById('page-'+id);
+  if(pg)pg.classList.add('active');
+  var nb=document.querySelector('nav button[data-page="'+id+'"]');
+  if(nb)nb.classList.add('active');
+  document.getElementById('page-title').textContent=PAGE_TITLES[id]||id;
+  if(id==='auditlog')loadLog();
+  if(id==='quarantine')loadQuarantine();
+  if(id==='history')loadHistory();
+}
+document.querySelectorAll('nav button[data-page]').forEach(function(b){
+  b.addEventListener('click',function(){navTo(b.getAttribute('data-page'))});
+});
 
-  // Status badge
-  var badge = document.getElementById('status-badge');
-  var red = (data.summary && data.summary.red) || 0;
-  var yellow = (data.summary && data.summary.yellow) || 0;
-  var green = (data.summary && data.summary.green) || 0;
-  var total = (data.summary && data.summary.total) || 0;
+function apiFetch(ep,cb){
+  var x=new XMLHttpRequest();
+  x.open('GET',API+ep,true);x.timeout=8000;
+  x.onload=function(){if(x.status===200){try{cb(null,JSON.parse(x.responseText))}catch(e){cb('JSON: '+e.message)}}else{cb('HTTP '+x.status)}};
+  x.onerror=function(){cb('Network error — is server.ps1 running?')};
+  x.ontimeout=function(){cb('Timeout')};
+  x.send();
+}
+function apiText(ep,cb){
+  var x=new XMLHttpRequest();
+  x.open('GET',API+ep,true);x.timeout=10000;
+  x.onload=function(){if(x.status===200){cb(null,x.responseText)}else{cb('HTTP '+x.status)}};
+  x.onerror=function(){cb('Network error')};x.ontimeout=function(){cb('Timeout')};x.send();
+}
 
-  if (red > 0) {
-    badge.textContent = '⚠ THREAT DETECTED';
-    badge.style.background = 'var(--red)';
-    badge.style.color = '#fff';
-  } else if (yellow > 0) {
-    badge.textContent = '⚠ REVIEW REQUIRED';
-    badge.style.background = 'var(--yellow)';
-    badge.style.color = '#000';
-  } else {
-    badge.textContent = '✔ CLEAN';
-    badge.style.background = 'var(--green)';
-    badge.style.color = '#000';
-  }
-
-  // Risk score
-  var score = data.riskScore || 0;
-  var level = data.riskLevel || '—';
-  var scoreEl = document.getElementById('risk-score');
-  scoreEl.textContent = score;
-  scoreEl.style.color = red > 0 ? 'var(--red)' : yellow > 0 ? 'var(--yellow)' : 'var(--green)';
-  document.getElementById('risk-level').textContent = level;
-  document.getElementById('risk-level').style.color = red > 0 ? 'var(--red)' : yellow > 0 ? 'var(--yellow)' : 'var(--green)';
-
-  // Counters
-  document.getElementById('cnt-red').textContent    = red;
-  document.getElementById('cnt-yellow').textContent = yellow;
-  document.getElementById('cnt-green').textContent  = green;
-  document.getElementById('cnt-total').textContent  = total;
-
-  // Meta
-  document.getElementById('meta-host').textContent = data.host || '—';
-  document.getElementById('meta-time').textContent = data.timestamp || '—';
-  document.getElementById('meta-dur').textContent  = (data.scanDuration != null) ? data.scanDuration + 's' : '—';
-  document.getElementById('meta-svc').textContent  = data.serviceStatus || '—';
-
-  // Findings
-  var findings = data.findings || [];
-  var order = { Red: 0, Yellow: 1, Green: 2 };
-  findings.sort(function (a, b) {
-    return (order[a.severity] || 9) - (order[b.severity] || 9);
+function loadScan(done){
+  apiFetch('/scan',function(err,data){
+    if(!err&&data){state.scan=data;renderDashboard();renderFindings()}
+    if(done)done(err);
   });
+}
 
-  var container = document.getElementById('findings-list');
-  if (findings.length === 0) return;
+function renderDashboard(){
+  var d=state.scan;
+  var noMsg=document.getElementById('no-data-msg');
+  var dc=document.getElementById('dash-content');
+  if(!d||!d.summary){noMsg.style.display='block';dc.style.visibility='hidden';return}
+  noMsg.style.display='none';dc.style.visibility='visible';
+  var red=d.summary.red||0,yellow=d.summary.yellow||0,green=d.summary.green||0,total=d.summary.total||0,score=d.riskScore||0,level=d.riskLevel||'';
+  document.getElementById('d-red').textContent=red;
+  document.getElementById('d-yellow').textContent=yellow;
+  document.getElementById('d-green').textContent=green;
+  document.getElementById('d-total').textContent=total;
+  document.getElementById('gauge-val').textContent=score;
+  document.getElementById('gauge-level').textContent=level;
+  var sc=score<30?'var(--green)':score<70?'var(--yellow)':'var(--red)';
+  document.getElementById('gauge-val').style.color=sc;
+  document.getElementById('gauge-level').style.color=sc;
+  var arc=document.getElementById('gauge-arc');
+  var f=Math.round((score/100)*195);
+  arc.setAttribute('stroke-dasharray',f+' '+(195-f));
+  arc.setAttribute('stroke',score<30?'#3fb950':score<70?'#d29922':'#f85149');
+  document.getElementById('sb-host').textContent=d.host||d.hostname||'—';
+  document.getElementById('sb-time').textContent=d.timestamp||'—';
+  document.getElementById('sb-dur').textContent=d.scanDuration!=null?d.scanDuration+'s':'—';
+  document.getElementById('sb-svc').textContent=d.serviceStatus||'—';
+  document.getElementById('sidebar-lastscan').textContent=d.timestamp?d.timestamp.replace('T',' '):'—';
+  drawSparkline();
+}
 
-  container.innerHTML = '';
-  findings.forEach(function (f) {
-    var sev = f.severity || 'Green';
-    var cls = sev.toLowerCase();
+function drawSparkline(){
+  var c=document.getElementById('sparkline');
+  if(!c||!c.getContext)return;
+  var h=state.history;if(!h||h.length<2)return;
+  var w=c.offsetWidth||600;c.width=w;c.height=60;
+  var ctx=c.getContext('2d');ctx.clearRect(0,0,w,60);
+  var s=h.map(function(x){return x.riskScore||0});
+  var mx=Math.max.apply(null,s)||100,st=w/(s.length-1);
+  ctx.beginPath();ctx.strokeStyle='#58a6ff';ctx.lineWidth=2;
+  s.forEach(function(v,i){var x=i*st,y=56-Math.round((v/mx)*50);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});
+  ctx.stroke();
+  ctx.beginPath();
+  s.forEach(function(v,i){var x=i*st,y=56-Math.round((v/mx)*50);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});
+  ctx.lineTo((s.length-1)*st,58);ctx.lineTo(0,58);ctx.closePath();
+  ctx.fillStyle='rgba(88,166,255,0.12)';ctx.fill();
+}
 
-    var badgeText = sev === 'Red' ? '✖ THREAT' : sev === 'Yellow' ? '⚠ SUSPICIOUS' : '✔ CLEAN';
-    var mitre = '';
-    if (f.mitreId) {
-      var techId = f.mitreId.replace('.', '/');
-      mitre = '<div class="finding-mitre"><a href="https://attack.mitre.org/techniques/' + techId + '/" target="_blank">' + esc(f.mitreId) + (f.mitreName ? ': ' + esc(f.mitreName) : '') + '</a></div>';
-    }
-    var path = f.path ? '<div class="finding-path">' + esc(f.path) + '</div>' : '';
-
-    var el = document.createElement('div');
-    el.className = 'finding ' + cls;
-    el.innerHTML =
-      '<div><span class="badge ' + cls + '">' + badgeText + '</span></div>' +
-      '<div class="finding-module">' + esc(f.module || '') + '<br><span style="font-size:10px;color:var(--muted)">' + esc(f.category || '') + '</span></div>' +
-      '<div class="finding-body">' +
-        '<div class="finding-title">' + esc(f.title || '') + '</div>' +
-        '<div class="finding-detail">' + esc(f.detail || '') + '</div>' +
-        path + mitre +
-      '</div>';
-    container.appendChild(el);
+var sevFilter='All';
+function setSevFilter(btn,sev){
+  sevFilter=sev;
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active')});
+  btn.classList.add('active');
+  renderFindings();
+}
+function renderFindings(){
+  var w=document.getElementById('findings-table-wrap');
+  var d=state.scan;
+  if(!d||!d.findings){w.innerHTML='<div class="empty"><div class="ico">&#x1F4C2;</div><p>No findings loaded.</p></div>';return}
+  var q=(document.getElementById('find-search').value||'').toLowerCase();
+  var ff=d.findings.filter(function(f){
+    if(sevFilter!=='All'&&f.severity!==sevFilter)return false;
+    if(q){var hay=((f.title||'')+(f.detail||'')+(f.module||'')+(f.path||'')).toLowerCase();if(hay.indexOf(q)===-1)return false}
+    return true;
   });
+  ff.sort(function(a,b){return ({Red:0,Yellow:1,Green:2}[a.severity]||9)-({Red:0,Yellow:1,Green:2}[b.severity]||9)});
+  if(ff.length===0){w.innerHTML='<div class="empty"><div class="ico">&#x2705;</div><p>No findings match filter.</p></div>';return}
+  var rows=ff.map(function(f,i){
+    var sev=f.severity||'Green',cls=sev==='Red'?'r':sev==='Yellow'?'y':'g',rc='row-'+cls;
+    var bt=sev==='Red'?'&#x2716; THREAT':sev==='Yellow'?'&#x26A0; SUSPICIOUS':'&#x2714; CLEAN';
+    var ml=f.mitreId?'<a href="https://attack.mitre.org/techniques/'+esc(f.mitreId.replace('.','/'))+'/" target="_blank">'+esc(f.mitreId)+'</a>':'—';
+    var qb=(sev==='Red'&&f.path)?'<button class="btn danger" style="font-size:10px;padding:2px 7px" onclick="quarantineFile(event,\''+esc(f.path||'')+'\')">&#x1F512;</button>':'';
+    return '<tr class="'+rc+'" onclick="toggleDetail(\'dr'+i+'\')">'
+      +'<td><span class="badge '+cls+'">'+bt+'</span></td>'
+      +'<td class="mono-sm">'+esc(f.module||'')+'</td>'
+      +'<td style="max-width:220px;word-break:break-word"><strong>'+esc(f.title||'')+'</strong></td>'
+      +'<td style="max-width:300px;word-break:break-word;color:var(--muted)">'+esc((f.detail||'').substring(0,120))+((f.detail||'').length>120?'…':'')+'</td>'
+      +'<td>'+ml+'</td>'
+      +'<td class="mono-sm" style="max-width:160px">'+esc((f.path||'').substring(0,60))+((f.path||'').length>60?'…':'')+'</td>'
+      +'<td>'+qb+'</td>'
+      +'</tr>'
+      +'<tr class="detail-row" id="dr'+i+'">'
+        +'<td colspan="7">'+esc(f.detail||'—')+'<br>'
+        +(f.path?'<strong>Path:</strong> <code class="mono-sm">'+esc(f.path)+'</code><br>':'')
+        +(f.mitreId?'<strong>MITRE:</strong> '+esc(f.mitreId)+' – '+esc(f.mitreName||'')+'<br>':'')
+        +(f.actionTaken?'<strong>Action:</strong> '+esc(f.actionTaken):'')
+        +'</td></tr>';
+  }).join('');
+  w.innerHTML='<table><thead><tr><th>Sev</th><th>Module</th><th>Title</th><th>Detail</th><th>MITRE</th><th>Path</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+function toggleDetail(id){var r=document.getElementById(id);if(r)r.classList.toggle('open')}
+function quarantineFile(e,path){
+  e.stopPropagation();
+  if(!confirm('Quarantine:\n'+path+'\n\nContinue?'))return;
+  var x=new XMLHttpRequest();x.open('POST',API+'/quarantine',true);x.setRequestHeader('Content-Type','application/json');
+  x.onload=function(){alert(x.status===200?'Quarantined.':'Error: '+x.responseText);loadScan()};
+  x.onerror=function(){alert('Server error.')};
+  x.send(JSON.stringify({path:path}));
+}
 
-  function esc(s) {
-    return String(s)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+function loadQuarantine(){
+  var w=document.getElementById('quar-list');w.innerHTML='<div class="loading">Loading...</div>';
+  apiFetch('/quarantine',function(err,data){
+    if(err||!data){w.innerHTML='<div class="empty"><p>'+esc(err||'No data')+'</p></div>';return}
+    var items=Array.isArray(data)?data:(data.items||data.files||[]);
+    state.quarantine=items;
+    if(items.length===0){w.innerHTML='<div class="empty"><div class="ico">&#x1F512;</div><p>No quarantined files.</p></div>';return}
+    w.innerHTML=items.map(function(item,i){
+      var orig=item.OriginalPath||item.originalPath||item.path||'—';
+      var hash=item.SHA256||item.sha256||item.hash||'—';
+      var reason=item.Reason||item.reason||'—';
+      var date=item.QuarantineDate||item.date||item.timestamp||'—';
+      return '<div class="q-item"><div>'
+        +'<div class="q-path">'+esc(orig)+'</div>'
+        +'<div class="q-meta">'+esc(date)+' &bull; '+esc(reason)+'</div>'
+        +'<div class="q-hash">SHA256: '+esc(hash)+'</div>'
+        +'</div><div class="q-actions">'
+        +'<button class="btn" onclick="qAction('+i+',\'restore\')">&#x21A9; Restore</button>'
+        +'<button class="btn danger" onclick="qAction('+i+',\'delete\')">&#x1F5D1;</button>'
+        +'</div></div>';
+    }).join('');
+  });
+}
+function qAction(i,action){
+  var item=state.quarantine[i];if(!item)return;
+  var orig=item.OriginalPath||item.originalPath||'file';
+  if(action==='delete'&&!confirm('PERMANENTLY DELETE '+orig+'?'))return;
+  if(action==='restore'&&!confirm('Restore '+orig+'?'))return;
+  var x=new XMLHttpRequest();x.open('POST',API+'/quarantine/'+action,true);x.setRequestHeader('Content-Type','application/json');
+  x.onload=function(){alert(x.status===200?'Done.':'Error: '+x.responseText);loadQuarantine()};
+  x.onerror=function(){alert('Server error.')};
+  x.send(JSON.stringify({index:i}));
+}
+
+var allLogLines=[];
+function loadLog(){
+  var out=document.getElementById('log-output');out.innerHTML='<span class="loading">Loading...</span>';
+  apiText('/log?lines=200',function(err,text){
+    if(err){out.innerHTML='<span style="color:var(--red)">'+esc(err)+'</span>';return}
+    allLogLines=(text||'').split('\n');filterLog();
+  });
+}
+function filterLog(){
+  var q=(document.getElementById('log-search').value||'').toLowerCase();
+  var out=document.getElementById('log-output');
+  var lines=q?allLogLines.filter(function(l){return l.toLowerCase().indexOf(q)!==-1}):allLogLines;
+  out.innerHTML=lines.map(function(l){
+    var u=l.toUpperCase();
+    var cls=u.indexOf(' ERROR')!==-1||u.indexOf('[ERROR]')!==-1?'log-r':u.indexOf('WARN')!==-1?'log-y':u.indexOf('OK')!==-1||u.indexOf('CLEAN')!==-1||u.indexOf('GREEN')!==-1?'log-g':'log-i';
+    return '<span class="'+cls+'">'+esc(l)+'</span>';
+  }).join('\n');
+  out.scrollTop=out.scrollHeight;
+}
+
+function loadHistory(){
+  var tw=document.getElementById('hist-table-wrap');tw.innerHTML='<div class="loading">Loading...</div>';
+  apiFetch('/history',function(err,data){
+    if(err||!data){tw.innerHTML='<div class="empty"><p>'+esc(err||'No history')+'</p></div>';return}
+    var h=Array.isArray(data)?data:[];state.history=h;
+    drawHistChart(h);drawSparkline();
+    if(h.length===0){tw.innerHTML='<div class="empty"><div class="ico">&#x1F4C8;</div><p>No scan history yet.</p></div>';return}
+    var rows=h.slice().reverse().map(function(s){
+      var sc=s.riskScore||0;var c=sc<30?'var(--green)':sc<70?'var(--yellow)':'var(--red)';
+      return '<tr><td>'+esc(s.timestamp||'—')+'</td><td style="font-weight:700;color:'+c+'">'+sc+'</td><td style="color:var(--red)">'+(s.red||0)+'</td><td style="color:var(--yellow)">'+(s.yellow||0)+'</td><td style="color:var(--green)">'+(s.green||0)+'</td><td>'+(s.duration!=null?s.duration+'s':'—')+'</td></tr>';
+    }).join('');
+    tw.innerHTML='<table><thead><tr><th>Timestamp</th><th>Risk Score</th><th>Red</th><th>Yellow</th><th>Green</th><th>Duration</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  });
+}
+function drawHistChart(history){
+  var c=document.getElementById('hist-chart');
+  if(!c||!c.getContext||history.length<2)return;
+  var W=c.offsetWidth||700,H=180;c.width=W;c.height=H;
+  var ctx=c.getContext('2d');ctx.clearRect(0,0,W,H);
+  var pad={t:16,b:28,l:36,r:12},cw=W-pad.l-pad.r,ch=H-pad.t-pad.b;
+  ctx.strokeStyle='#30363d';ctx.lineWidth=1;
+  [0,25,50,75,100].forEach(function(v){var y=pad.t+ch-Math.round((v/100)*ch);ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();ctx.fillStyle='#8b949e';ctx.font='10px Consolas';ctx.fillText(v,2,y+4)});
+  var st=cw/Math.max(history.length-1,1);
+  function dl(vals,max,color,fill){
+    var pts=vals.map(function(v,i){return{x:pad.l+i*st,y:pad.t+ch-Math.round((Math.min(v,max)/max)*ch)}});
+    ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2;
+    pts.forEach(function(p,i){if(i===0)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y)});ctx.stroke();
+    if(fill){ctx.beginPath();pts.forEach(function(p,i){if(i===0)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y)});ctx.lineTo(pts[pts.length-1].x,pad.t+ch);ctx.lineTo(pts[0].x,pad.t+ch);ctx.closePath();ctx.fillStyle=fill;ctx.fill()}
   }
-})();
+  var scores=history.map(function(h){return h.riskScore||0});
+  var reds=history.map(function(h){return h.red||0});
+  var yels=history.map(function(h){return h.yellow||0});
+  var mx=Math.max.apply(null,reds.concat(yels))||1;
+  dl(reds,mx,'#f85149','rgba(248,81,73,0.1)');
+  dl(yels,mx,'#d29922','rgba(210,153,34,0.08)');
+  dl(scores,100,'#58a6ff','rgba(88,166,255,0.1)');
+}
+
+function loadStatus(){
+  apiFetch('/status',function(err,data){
+    var dot=document.getElementById('svc-dot'),lbl=document.getElementById('svc-label');
+    if(!err&&data){var r=(data.status||'').toLowerCase()==='running';dot.className='dot '+(r?'running':'stopped');lbl.textContent=data.status||'—';var s=document.getElementById('sb-svc');if(s)s.textContent=data.status||'—'}
+    else{dot.className='dot stopped';lbl.textContent='Unknown'}
+  });
+}
+
+function triggerScan(){
+  var btn=document.getElementById('run-scan-btn');btn.disabled=true;btn.textContent='Running...';
+  var x=new XMLHttpRequest();x.open('POST',API+'/scan/run',true);
+  x.onload=function(){btn.disabled=false;btn.innerHTML='&#x25B6; Run Scan';if(x.status===200)alert('Scan started. Refresh in ~60s.');else alert('Error: '+x.responseText)};
+  x.onerror=function(){btn.disabled=false;btn.innerHTML='&#x25B6; Run Scan';alert('Server error.')};x.send();
+}
+
+function refreshAll(){
+  var sp=document.getElementById('refresh-spin');sp.classList.add('spin');
+  loadScan(function(){
+    loadStatus();
+    var ap=document.querySelector('.page.active');
+    if(ap){if(ap.id==='page-auditlog')loadLog();else if(ap.id==='page-history')loadHistory();else if(ap.id==='page-quarantine')loadQuarantine()}
+    setTimeout(function(){sp.classList.remove('spin')},500);
+  });
+}
+
+document.getElementById('refresh-btn').addEventListener('click',function(){state.countdown=REFRESH;refreshAll()});
+
+setInterval(function(){
+  state.countdown--;
+  if(state.countdown<=0){state.countdown=REFRESH;refreshAll()}
+  var el=document.getElementById('auto-countdown');if(el)el.textContent='Refresh in '+state.countdown+'s';
+},1000);
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+refreshAll();
 </script>
 </body>
 </html>

@@ -881,6 +881,46 @@ function Invoke-RemoteAnchorSyncMenu {
 }
 
 # ============================================================
+# WebUI launcher
+# ============================================================
+function Launch-WebUI {
+    $serverScript = 'C:\QuietMonitor\WebUI\server.ps1'
+    $webUrl       = 'http://localhost:8080'
+
+    # Check if port 8080 is already occupied
+    $busy = $false
+    try {
+        $conn = [System.Net.Sockets.TcpClient]::new()
+        $conn.Connect('localhost', 8080)
+        $conn.Close()
+        $busy = $true
+    } catch { }
+
+    if (-not $busy) {
+        if (Test-Path $serverScript) {
+            Write-Host ''
+            Write-Status 'Starting WebUI server on http://localhost:8080 ...' 'Cyan'
+            Start-Process powershell.exe -ArgumentList "-NonInteractive -NoProfile -ExecutionPolicy Bypass -File `"$serverScript`"" -WindowStyle Minimized
+            Start-Sleep -Milliseconds 1200
+        } else {
+            Write-Host ''
+            Write-Status "server.ps1 not found at $serverScript" 'Yellow'
+            Write-Host "  Copy server.ps1 to $serverScript first." -ForegroundColor DarkGray
+            Pause-ForKey
+            return
+        }
+    } else {
+        Write-Host ''
+        Write-Status 'WebUI server already running on port 8080.' 'Green'
+    }
+
+    Start-Process $webUrl
+    Write-Host ''
+    Write-Status "Browser opened: $webUrl" 'Green'
+    Pause-ForKey
+}
+
+# ============================================================
 # Main interactive loop
 # ============================================================
 function Show-MainMenu {
@@ -960,7 +1000,7 @@ function Show-MainMenu {
     Write-Host "  [12] Threat Intel Check       [15] Ransomware Guard" -ForegroundColor DarkCyan
     Write-Host ("  " + ('-' * 44)) -ForegroundColor DarkGray
     Write-Host "  [16] Integrity Check          [19] Remote Anchor Sync" -ForegroundColor DarkCyan
-    Write-Host "  [17] RMM Detection Scan" -ForegroundColor DarkCyan
+    Write-Host "  [17] RMM Detection Scan        [20] Launch WebUI" -ForegroundColor DarkCyan
     Write-Host "  [18] Verify Audit Log Chain" -ForegroundColor DarkCyan
     Write-Host ""
 }
@@ -968,7 +1008,7 @@ function Show-MainMenu {
 $running = $true
 while ($running) {
     Show-MainMenu
-    $choice = Read-MenuChoice "[0-19]"
+    $choice = Read-MenuChoice "[0-20]"
 
     switch ($choice) {
         '1'  { Invoke-FullScan }
@@ -990,6 +1030,7 @@ while ($running) {
         '17' { Invoke-RMMScan }
         '18' { Invoke-AuditChainVerifyMenu }
         '19' { Invoke-RemoteAnchorSyncMenu }
+        '20' { Launch-WebUI }
         '0'  { $running = $false }
         default {
             Write-Host ""
